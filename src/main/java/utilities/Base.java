@@ -109,7 +109,8 @@ public class Base {
         testLevelReport.get().log(Status.INFO, "Execution Ended for : " + m.getAnnotation(Test.class).description());
         if (!result.isSuccess()) {
             try {
-                testLevelReport.get().addScreenCaptureFromPath(takeScreenShotWeb(result.getMethod().getMethodName()).getPath().substring(26));
+                if (driver != null)
+                    testLevelReport.get().addScreenCaptureFromPath(takeScreenShotWeb(result.getMethod().getMethodName()).getPath().substring(26));
             } catch (Exception e) {
                 logger.error("Error in taking screenshot");
             }

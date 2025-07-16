@@ -1,6 +1,6 @@
 package qa.tests;
 
-import org.testng.Assert;
+import com.aventstack.extentreports.Status;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import qa.Retry;
@@ -29,21 +29,20 @@ public class Automation extends Base {
             click(LoginPage.loginButtonOnProfileDropDown, "Select Login Option");
             System.out.println("Verifying Data Provider Data --> Phone No : " + phoneNo + " and OTP : " + otp);
         } catch (Exception e) {
-            Assert.fail("Test Execution Failed for : " + getClass().getAnnotation(Test.class).description());
+            testLevelReport.get().log(Status.FAIL, "Test Execution Failed for : " + getClass().getAnnotation(Test.class).description());
         }
     }
 
-    @Test(description = "CocaCola API | Login & Sign Up Flow | LoginSignUp_HLS_001_TC_002 : Validate GET API for getting avatar on Home Page", retryAnalyzer = Retry.class, alwaysRun = true, enabled = true, groups = "sanity")
+    @Test(description = "CocaCola API | Login & Sign Up Flow | LoginSignUp_HLS_001_TC_002 : Validate GET API for getting avatar on Home Page", alwaysRun = true, enabled = true, groups = "sanity")
     public void hitGetAPIForAvatarOnCocaColaHomePage() {
         try {
             String requestUrl = "https://api-jiab-staging.infinitelocus.com/api/v1/avatars/";
             AvatarHomePage avatarHomePage = callApi(RefactoredRestAssuredHelper.HTTPRequestType.GET, null, null, requestUrl, null, null, null, 0, 200, "status", AvatarHomePage.class);
-            System.out.println("Status Code in response is : " + avatarHomePage.status);
-            System.out.println("Message in response is : " + avatarHomePage.message);
-            Assert.assertEquals(avatarHomePage.status, 200, "Actual and Expected Status Code in response is same");
-            Assert.assertEquals(avatarHomePage.message, "Request successful", "Actual and Expected Message in response is same");
+            compareAndLogNotNull(avatarHomePage, "Response Check : Not Null");
+            compareAndLog(avatarHomePage.status, 200, "Response Status Code Check");
+            compareAndLog(avatarHomePage.message, "Request successful", "Response Message Check");
         } catch (Exception e) {
-            Assert.fail("Test Execution Failed for : " + getClass().getAnnotation(Test.class).description());
+            testLevelReport.get().log(Status.FAIL, "Test Execution Failed for : " + getClass().getAnnotation(Test.class).description() + e.getMessage());
         }
     }
 }

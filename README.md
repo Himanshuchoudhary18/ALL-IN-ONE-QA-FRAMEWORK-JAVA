@@ -22,5 +22,5 @@ mvn clean install surefire:test -Dsurefire.suiteXmlFiles=Testng/api_<project>.xm
 
 To run the performance tests :
 
-mvn clean test-compile gatling:test -Dgatling.simulationClass=perf.gatling.tests.<directoryOfProject>.<simulationClass>
+mvn clean test-compile gatling:test -Dgatling.simulationClass=perf.<directoryOfProject>.<simulationClass>
 

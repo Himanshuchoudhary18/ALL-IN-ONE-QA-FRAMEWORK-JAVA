@@ -74,6 +74,29 @@ public class CommonFunctionsWeb extends Base {
         }
     }
 
+    public static void compareAndLogNotNull(Object actual, String message) {
+        Status status = (actual != null) ? Status.PASS : Status.FAIL;
+        testLevelReport.get().log(status, message + " | Value is " + (actual != null ? "NOT NULL" : "NULL"));
+        Assert.assertNotNull(actual,message + " | Value is " + (actual != null ? "NOT NULL" : "NULL"));
+    }
+
+    public static <T> void compareAndLog(T actual, T expected, String message) {
+        Status status;
+        boolean validation = false;
+        if (actual == null && expected == null) {
+            status = Status.PASS;
+            validation = true;
+        } else if (actual == null || expected == null) {
+            status = Status.FAIL;
+        } else {
+            status = actual.equals(expected) ? Status.PASS : Status.FAIL;
+            validation = actual.equals(expected);
+        }
+        testLevelReport.get().log(status, message + " | Expected: " + expected + " | Actual: " + actual);
+        Assert.assertTrue(validation, message + " | Validation - Expected: " + expected + ", Actual: " + actual);
+    }
+
+
     public static void openURL(String application) throws InterruptedException {
         String url = null;
         try {
