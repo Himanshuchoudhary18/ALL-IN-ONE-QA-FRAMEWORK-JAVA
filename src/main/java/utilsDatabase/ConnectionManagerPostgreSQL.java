@@ -11,7 +11,7 @@ import static org.testng.AssertJUnit.assertNotNull;
 import static utilsDatabase.SSHConnectionManager.*;
 
 @Slf4j
-public class ConnectionManagerMySQL {
+public class ConnectionManagerPostgreSQL {
     private static final int CONNECTION_TIMEOUT = 30000;
     private static final int MAX_CONNECTION_RETRIES = 3;
     private static final int CONNECTION_RETRY_DELAY_MS = 1000;
@@ -20,7 +20,7 @@ public class ConnectionManagerMySQL {
     private static final ThreadLocal<String> dbUser = new ThreadLocal<>();
     private static final ThreadLocal<String> dbPassword = new ThreadLocal<>();
     private static final ThreadLocal<String> dbName = new ThreadLocal<>();
-    private static final ThreadLocal<Integer> dbPort = ThreadLocal.withInitial(() -> 3306);
+    private static final ThreadLocal<Integer> dbPort = ThreadLocal.withInitial(() -> 5432);
     private static final ThreadLocal<Boolean> isLocalRun = new ThreadLocal<>();
 
     public static void setDbHost(String value) { dbHost.set(value); }
@@ -36,28 +36,37 @@ public class ConnectionManagerMySQL {
     public static void setIsLocalRun(Boolean value) { isLocalRun.set(value); }
     public static Boolean getIsLocalRun() { return isLocalRun.get(); }
 
-
-    private static void connectToMySQLDatabase() throws JSchException {
-        connectToMySQLDatabase(dbUser.get(), dbHost.get(), dbPassword.get(), dbName.get());
+    private static void connectToPostgreSQLDatabase() throws JSchException {
+        setDbHost(Base.getProperty().getProperty("postgreSQL_Host"));
+        setDbName(Base.getProperty().getProperty("postgreSQL_DatabaseName"));
+        setDbUser(Base.getProperty().getProperty("postgreSQL_User"));
+        setDbPassword(Base.getProperty().getProperty("postgreSQL_Password"));
+        connectToPostgreSQLDatabase(dbUser.get(), dbHost.get(), dbPassword.get(), dbName.get());
     }
 
-    private static void connectToMySQLDatabase(String dbUser, String dbHost, String dbPassword, String dbName) throws JSchException {
+    private static void connectToPostgreSQLDatabase(String dbUser, String dbHost, String dbPassword, String dbName) throws JSchException {
         boolean connected = false;
         int assignedPort;
         setIsLocalRun(Boolean.valueOf(Base.getProperty().getProperty("local")));
         if (isLocalRun.get()) {
-            // JDBC connection through SSH tunnel
             assignedPort = setPortForwarding(0, dbHost, dbPort.get());
         } else {
             assignedPort = getDbPort();
         }
+
         String jdbcHost = "127.0.0.1";
-        String jdbcUrl = "jdbc:mysql://" + dbUser + ":" + dbPassword + "@" + jdbcHost + ":" + assignedPort + "/" + dbName + "?serverTimezone=UTC&autoReconnect=true&useSSL=false";
+        String jdbcUrl = "jdbc:postgresql://" + jdbcHost + ":" + assignedPort + "/" + dbName;
         int retryCount = 0;
+
         while (!connected && retryCount < MAX_CONNECTION_RETRIES) {
             try {
-                DriverManager.setLoginTimeout(CONNECTION_TIMEOUT / 1000); // set connection timeout
-                dbConnection.set(DriverManager.getConnection(jdbcUrl));
+                DriverManager.setLoginTimeout(CONNECTION_TIMEOUT / 1000);
+                Properties props = new Properties();
+                props.setProperty("user", dbUser);
+                props.setProperty("password", dbPassword);
+                props.setProperty("ssl", "false");
+
+                dbConnection.set(DriverManager.getConnection(jdbcUrl, props));
                 connected = true;
                 Base.logger.info("{} DB Connection successful", dbName);
             } catch (SQLException e) {
@@ -65,6 +74,7 @@ public class ConnectionManagerMySQL {
                 Base.logger.info("{} Database connection failed on attempt {}, will retry...", dbName, retryCount);
             }
         }
+
         if (!connected) {
             Base.logger.info("Failed to establish database connection after multiple retries!");
         }
@@ -74,13 +84,13 @@ public class ConnectionManagerMySQL {
         assertNotNull("Database connection should not be null.", dbConnection.get());
     }
 
-    public static void connectToDatabaseMySQL() throws JSchException {
+    public static void connectToDatabasePostgreSQL() throws JSchException {
         connectToCommonSSHServer();
-        connectToMySQLDatabase();
+        connectToPostgreSQLDatabase();
         verifyDatabaseConnection();
     }
 
-    public static void closeConnectionDatabaseMySQL() {
+    public static void closeConnectionDatabasePostgreSQL() {
         try {
             if (!Objects.isNull(dbConnection.get())) {
                 dbConnection.get().close();
@@ -121,5 +131,4 @@ public class ConnectionManagerMySQL {
 
         return resultList;
     }
-
 }

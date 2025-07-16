@@ -4,6 +4,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import lombok.extern.slf4j.Slf4j;
+import org.testng.Assert;
 import utilities.Base;
 import utilities.Constants;
 
@@ -20,6 +21,14 @@ public class SSHConnectionManager {
 
     private static final ThreadLocal<Session> threadLocalSession = ThreadLocal.withInitial(() -> null);
     protected static final AtomicInteger assignedPort = new AtomicInteger();
+
+//    static {
+//        // Enable verbose JSch logging
+//        JSch.setLogger(new com.jcraft.jsch.Logger() {
+//            public boolean isEnabled(int level) { return true; }
+//            public void log(int level, String message) { System.out.println("JSch: " + message); }
+//        });
+//    }
 
     /**
      * Retrieves the current thread's SSH session.
@@ -65,6 +74,8 @@ public class SSHConnectionManager {
             session.setConfig("StrictHostKeyChecking", "no"); // Disable host key checking for simplicity
             session.setConfig("PreferredAuthentications", "publickey");
             session.setConfig("ConnectTimeout", String.valueOf(Base.getProperty().getProperty("CONNECTION_TIMEOUT")));
+            session.setConfig("PubkeyAcceptedAlgorithms", "rsa-sha2-512,rsa-sha2-256,ssh-rsa");
+            session.setConfig("server_host_key", "rsa-sha2-512,rsa-sha2-256,ssh-rsa");
             session.connect();
             if (session.isConnected()) {
                 Base.logger.info("SSH Connection successful");
@@ -73,6 +84,7 @@ public class SSHConnectionManager {
             }
         } catch (JSchException e) {
             Base.logger.error("SSH Connection error: ", e);
+            Assert.fail("SSH Connection error: ", e);
         }
         return session;
     }
