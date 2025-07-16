@@ -13,24 +13,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DriverManager extends Base {
-    private static final ThreadLocal<WebDriver> driver = new ThreadLocal<WebDriver>();
     static Logger logger = LoggerFactory.getLogger(DriverManager.class);
     private static Map<String, Method> methods = new HashMap<String, Method>();
 
     public static WebDriver getDriver() {
-        return driver.get();
+        return Base.getDriver();
     }
 
     public static void setDriver(WebDriver dvr) {
-        driver.set(dvr);
+        Base.setDriver(dvr);
     }
 
     public static WebDriver getDriverInstance(String browser, String url) {
-        if (driver.get() == null) {
+        if (getDriver() == null) {
             if (browser.equalsIgnoreCase("CHROME")) {
                 ChromeOptions options = new ChromeOptions();
                 options.addArguments("--remote-allow-origins=*");
-                if (property.getProperty("headless").equalsIgnoreCase("true")) {
+                if (Base.getProperty().getProperty("headless").equalsIgnoreCase("true")) {
                     options.addArguments("--headless");
                     options.addArguments("--disable-gpu");
                     options.addArguments("--window-size=1920,1080");
@@ -39,7 +38,6 @@ public class DriverManager extends Base {
                     options.addArguments("--no-sandbox");
                     options.addArguments("--disable-dev-shm-usage");
                 }
-//                options.addArguments("--no-sandbox");
                 options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
                 options.setCapability("browserVersion", "stable");
                 options.setCapability("browserName", "chrome");
@@ -52,22 +50,22 @@ public class DriverManager extends Base {
                 Assert.fail("Unable to launch browser : " + browser);
             }
         }
-        setDriver(driver.get());
+        setDriver(getDriver());
         return getDriver();
     }
 
     public static void killDriverInstance() {
-        if (driver.get() != null) {
-            driver.get().quit();
-            driver.set(null);
+        if (getDriver() != null) {
+            getDriver().quit();
+            setDriver(null);
         }
     }
 
     public static void setImplicitWait(int time) {
-        driver.get().manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(time));
+        getDriver().manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(time));
     }
 
     public static void setPageLoadTimeOut(int time) {
-        driver.get().manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(time));
+        getDriver().manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(time));
     }
 }

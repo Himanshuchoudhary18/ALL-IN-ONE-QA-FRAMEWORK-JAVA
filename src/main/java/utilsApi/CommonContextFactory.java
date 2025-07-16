@@ -3,7 +3,7 @@ package utilsApi;
 public class CommonContextFactory {
     private static final ThreadLocal<CommonContext> commonContextThreadLocal = new ThreadLocal<CommonContext>() {
         public CommonContext initialValue() {
-            return CommonContext.getInstance();
+            return new CommonContext();
         }
     };
 

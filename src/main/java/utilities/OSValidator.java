@@ -1,25 +1,31 @@
 package utilities;
 
 public class OSValidator {
-    public static String shellType;
-    public static String delimiter;
+    private static final ThreadLocal<String> shellType = new ThreadLocal<>();
+    private static final ThreadLocal<String> delimiter = new ThreadLocal<>();
 
     public static void setPropValues(String OS) {
         if (isWindows(OS)) {
-            shellType = "cmd";
-            delimiter = "\\";
+            shellType.set("cmd");
+            delimiter.set("\\");
         } else if (isMac(OS)) {
-            shellType = "/bin/bash";
-            delimiter = "/";
+            shellType.set("/bin/bash");
+            delimiter.set("/");
         } else if (isUnix(OS)) {
-            shellType = "/bin/sh";
-            delimiter = "/";
+            shellType.set("/bin/sh");
+            delimiter.set("/");
         } else {
-            shellType = "cmd";
-            delimiter = "\\";
+            shellType.set("cmd");
+            delimiter.set("\\");
         }
     }
 
+    public static String getShellType() {
+        return shellType.get();
+    }
+    public static String getDelimiter() {
+        return delimiter.get();
+    }
     private static boolean isWindows(String OS) {
         return (OS.contains("win"));
     }

@@ -28,7 +28,7 @@ import static utilsWeb.CommonFunctionsWeb.getScenario;
 public class RefactoredRestAssuredHelper {
     private static final Logger logger = LoggerFactory.getLogger(RefactoredRestAssuredHelper.class);
     public static StringBuilder curlCmd;
-    public static boolean enableAdditionalFieldsCheckInResponse = Base.property.getProperty("enableAdditionalFieldsCheckInResponse").equalsIgnoreCase("true");
+    public static boolean enableAdditionalFieldsCheckInResponse = Base.getProperty().getProperty("enableAdditionalFieldsCheckInResponse").equalsIgnoreCase("true");
     private static long latency;
     private static String responseToLog;
     private static ValidatableResponse validatableResponse = null;
@@ -128,7 +128,7 @@ public class RefactoredRestAssuredHelper {
     }
 
     private static void logResponse(String responseToLog) {
-        if (Base.property.getProperty("logResponse").equalsIgnoreCase("true")) {
+        if (Base.getProperty().getProperty("logResponse").equalsIgnoreCase("true")) {
             logger.info(responseToLog);
         }
     }
@@ -144,7 +144,7 @@ public class RefactoredRestAssuredHelper {
         apiResponseTime.setId(currentId++);
         ApiUtils.apiList.add(apiResponseTime);
 
-        long minAcceptableLatency = Long.parseLong(Base.property.getProperty("minAcceptableLatency"));
+        long minAcceptableLatency = Long.parseLong(Base.getProperty().getProperty("minAcceptableLatency"));
 
         if (currentLatency < minAcceptableLatency) {
             return;
@@ -167,7 +167,7 @@ public class RefactoredRestAssuredHelper {
     }
 
     private static void validateStatusCode(ExtractableResponse<Response> response, long expectedStatusCode, String statusCheckKeyPath) {
-        if (Base.property.getProperty("statusCheck200").equalsIgnoreCase("true") && expectedStatusCode > 0) {
+        if (Base.getProperty().getProperty("statusCheck200").equalsIgnoreCase("true") && expectedStatusCode > 0) {
             if (statusCheckKeyPath == null) {
                 logger.warn("Requested key path is null skipping status code check in response data");
                 return;

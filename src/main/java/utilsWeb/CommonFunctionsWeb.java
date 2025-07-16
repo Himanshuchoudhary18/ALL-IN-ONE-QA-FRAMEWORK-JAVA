@@ -100,12 +100,12 @@ public class CommonFunctionsWeb extends Base {
     public static void openURL(String application) throws InterruptedException {
         String url = null;
         try {
-            url = "https://" + application + "." + Base.property.getProperty("domain");
-            driver = DriverManager.getDriverInstance(property.getProperty("browser"), url);
-            driver.manage().window().maximize();
+            url = "https://" + application + "." + Base.getProperty().getProperty("domain");
+            Base.setDriver(DriverManager.getDriverInstance(Base.getProperty().getProperty("browser"), url));
+            Base.getDriver().manage().window().maximize();
             loadPageWithRetry(url);
-            setPageLoadTimeOut(Integer.parseInt(property.getProperty("pageLoadTimeOut")));
-            setImplicitWait(Integer.parseInt(property.getProperty("implicitWait")));
+            setPageLoadTimeOut(Integer.parseInt(Base.getProperty().getProperty("pageLoadTimeOut")));
+            setImplicitWait(Integer.parseInt(Base.getProperty().getProperty("implicitWait")));
             testLevelReport.get().log(Status.PASS, "Able to launch URL");
             testLevelReport.get().log(Status.INFO, url);
         } catch (Exception e) {
@@ -125,7 +125,7 @@ public class CommonFunctionsWeb extends Base {
     public static void enterCharacter(By locator, String generatedString, String elementName) {
         try {
             fluentWait(locator).clear();
-            Wait<WebDriver> wait = Waits.getFluentWait(driver, Duration.ofSeconds(5), Duration.ofMillis(500), List.of(NoSuchElementException.class));
+            Wait<WebDriver> wait = Waits.getFluentWait(Base.getDriver(), Duration.ofSeconds(5), Duration.ofMillis(500), List.of(NoSuchElementException.class));
             WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             element.click();
             fluentWait(locator).sendKeys(generatedString);
@@ -162,9 +162,9 @@ public class CommonFunctionsWeb extends Base {
 
     public static void jsClickFluentWithIsDisplayedCheck(By locator, String elementName) {
         try {
-            WebElement element = driver.findElement(locator);
+            WebElement element = Base.getDriver().findElement(locator);
             fluentWait(element).isDisplayed();
-            JavascriptExecutor js = (JavascriptExecutor) driver;
+            JavascriptExecutor js = (JavascriptExecutor) Base.getDriver();
             js.executeScript("arguments[0].click();", element);
             testLevelReport.get().log(Status.PASS, "Clicked on element : " + elementName);
         } catch (Exception e) {
@@ -256,12 +256,12 @@ public class CommonFunctionsWeb extends Base {
     }
 
     public static WebElement fluentWait(By locator) {
-        Wait<WebDriver> wait = Waits.getFluentWait(driver, Duration.ofSeconds(Long.parseLong(property.getProperty("timeout"))), Duration.ofMillis(500), List.of(NoSuchElementException.class));
+        Wait<WebDriver> wait = Waits.getFluentWait(Base.getDriver(), Duration.ofSeconds(Long.parseLong(Base.getProperty().getProperty("timeout"))), Duration.ofMillis(500), List.of(NoSuchElementException.class));
         return wait.until(driver1 -> driver1.findElement(locator));
     }
 
     private static WebElement fluentWait(WebElement element) {
-        Wait<WebDriver> wait = Waits.getFluentWait(driver, Duration.ofSeconds(Long.parseLong(property.getProperty("timeout"))), Duration.ofMillis(500), List.of(NoSuchElementException.class));
+        Wait<WebDriver> wait = Waits.getFluentWait(Base.getDriver(), Duration.ofSeconds(Long.parseLong(Base.getProperty().getProperty("timeout"))), Duration.ofMillis(500), List.of(NoSuchElementException.class));
         return wait.until(driver -> element);
     }
 
@@ -270,7 +270,7 @@ public class CommonFunctionsWeb extends Base {
         while (initTime < timeoutInSeconds) {
             try {
                 // Click the element if visible
-                WebElement element = driver.findElement(locator);
+                WebElement element = Base.getDriver().findElement(locator);
                 element.click();
 
                 // Log success and return the element
@@ -302,7 +302,7 @@ public class CommonFunctionsWeb extends Base {
 
         while (attempt < retryCount) {
             try {
-                Wait<WebDriver> wait = Waits.getFluentWait(driver, Duration.ofSeconds(10), Duration.ofMillis(500),
+                Wait<WebDriver> wait = Waits.getFluentWait(Base.getDriver(), Duration.ofSeconds(10), Duration.ofMillis(500),
                         List.of(NoSuchElementException.class));
 
                 WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
@@ -366,7 +366,7 @@ public class CommonFunctionsWeb extends Base {
         boolean pageLoaded = false;
         while (!pageLoaded && retryCount < 8) {
             try {
-                driver.get(url);
+                Base.getDriver().get(url);
                 pageLoaded = true;
             } catch (Exception e) {
                 retryCount++;
@@ -375,9 +375,9 @@ public class CommonFunctionsWeb extends Base {
         }
         if (!pageLoaded) {
             logger.info("Page could not be loaded after 8 attempts. Exiting the test.");
-            if (driver != null) {
-                driver.close();
-                driver.quit();
+            if (Base.getDriver() != null) {
+                Base.getDriver().close();
+                Base.getDriver().quit();
             }
             System.exit(0);
         }
@@ -406,19 +406,19 @@ public class CommonFunctionsWeb extends Base {
             Thread.sleep(5000);
             switch (operation) {
                 case "keyenter":
-                    driver.findElement(input).sendKeys(Keys.RETURN);
+                    Base.getDriver().findElement(input).sendKeys(Keys.RETURN);
                     break;
                 case "keydown":
-                    driver.findElement(input).sendKeys(Keys.ARROW_DOWN);
+                    Base.getDriver().findElement(input).sendKeys(Keys.ARROW_DOWN);
                     break;
                 case "keyleft":
-                    driver.findElement(input).sendKeys(Keys.ARROW_LEFT);
+                    Base.getDriver().findElement(input).sendKeys(Keys.ARROW_LEFT);
                     break;
                 case "keyright":
-                    driver.findElement(input).sendKeys(Keys.ARROW_RIGHT);
+                    Base.getDriver().findElement(input).sendKeys(Keys.ARROW_RIGHT);
                     break;
                 case "keyup":
-                    driver.findElement(input).sendKeys(Keys.ARROW_UP);
+                    Base.getDriver().findElement(input).sendKeys(Keys.ARROW_UP);
                     break;
                 default:
                     testLevelReport.get().log(Status.FAIL, "Operation not supported");
@@ -553,7 +553,7 @@ public class CommonFunctionsWeb extends Base {
 
     public static void ScrollByVisibleElement(By locator, String elementName) {
         try {
-            JavascriptExecutor js = (JavascriptExecutor) driver;
+            JavascriptExecutor js = (JavascriptExecutor) Base.getDriver();
             WebElement Element = fluentWait(locator);
 //             = driver.findElement(locator);
             js.executeScript("arguments[0].scrollIntoView();", Element);
@@ -569,7 +569,7 @@ public class CommonFunctionsWeb extends Base {
         String path = System.getProperty("user.dir");
         String fileWithPath = path + SCREENSHOT_PATH;
         //Convert web driver object to TakeScreenshot
-        TakesScreenshot scrShot = ((TakesScreenshot) driver);
+        TakesScreenshot scrShot = ((TakesScreenshot) Base.getDriver());
 
         //Call getScreenshotAs method to create image file
 
@@ -601,7 +601,7 @@ public class CommonFunctionsWeb extends Base {
         try {
 
             Thread.sleep(1000);
-            Actions actions = new Actions(driver);
+            Actions actions = new Actions(Base.getDriver());
             switch (operation) {
 
                 case "copy":
@@ -662,11 +662,11 @@ public class CommonFunctionsWeb extends Base {
     public static void jsClick(By locator, String elementName, long... waitBeforeClickInMs) {
         try {
             if (waitBeforeClickInMs.length > 0) {
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+                WebDriverWait wait = new WebDriverWait(Base.getDriver(), Duration.ofSeconds(10));
                 WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
                 element.click();
             }
-            JavascriptExecutor js = (JavascriptExecutor) driver;
+            JavascriptExecutor js = (JavascriptExecutor) Base.getDriver();
             js.executeScript("arguments[0].click();", fluentWait(locator));
             testLevelReport.get().log(Status.PASS, "Clicked on element using JS executor : " + elementName);
         } catch (Exception e) {
@@ -689,16 +689,16 @@ public class CommonFunctionsWeb extends Base {
     }
 
     private static void setPageLoadTimeOut(int time) {
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(time));
+        Base.getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(time));
     }
 
     private static void setImplicitWait(int time) {
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(time));
+        Base.getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(time));
     }
 
     public static void waitForPageLoad(String message) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(driver.manage().timeouts().getPageLoadTimeout().getSeconds()));
+            WebDriverWait wait = new WebDriverWait(Base.getDriver(), Duration.ofSeconds(Base.getDriver().manage().timeouts().getPageLoadTimeout().getSeconds()));
             wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
         } catch (Exception e) {
             testLevelReport.get().log(Status.FAIL, "Page is not loaded");
@@ -710,7 +710,7 @@ public class CommonFunctionsWeb extends Base {
     public static File takeScreenShotWeb(String screenShotName) {
         String destDir = "";
         try {
-            File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            File scrFile = ((TakesScreenshot) Base.getDriver()).getScreenshotAs(OutputType.FILE);
             DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy_hh");
             destDir = "testResults/extentReports/screenshotsWeb/Failure" + dateFormat.format(new Date());
             new File(destDir).mkdirs();
@@ -743,8 +743,8 @@ public class CommonFunctionsWeb extends Base {
 
     public static void waitForElementToDisappear(By locator, int timeoutInSeconds, String elementName, boolean shouldRefreshPage) {
         try {
-            if (shouldRefreshPage) driver.navigate().refresh();
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds));
+            if (shouldRefreshPage) Base.getDriver().navigate().refresh();
+            WebDriverWait wait = new WebDriverWait(Base.getDriver(), Duration.ofSeconds(timeoutInSeconds));
             wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
             logger.info("Element disappeared successfully.");
         } catch (TimeoutException e) {
@@ -756,7 +756,7 @@ public class CommonFunctionsWeb extends Base {
 
     public static void dispatchUiEstimatedFareAmount(By fareLocator, String fareType, Float apiAmount) {
         if (CommonFunctionsWeb.verifyPresenceOfElement(fareLocator, fareType)) {
-            String fareText = driver.findElement(fareLocator).getText();
+            String fareText = Base.getDriver().findElement(fareLocator).getText();
             String fareAmountString = fareText.replaceAll("[^0-9.]", "");  // Extract only numbers and dots
             if (!fareAmountString.isEmpty()) {
                 float uiFare = Float.parseFloat(fareAmountString);  // Convert to float
@@ -782,7 +782,7 @@ public class CommonFunctionsWeb extends Base {
 
     public static void dispatchUiConfirmFare(By fareLocator, String fareType, Float finalEstimatedAmount) {
         if (CommonFunctionsWeb.verifyPresenceOfElement(fareLocator, fareType)) {
-            String fareText = driver.findElement(fareLocator).getText();
+            String fareText = Base.getDriver().findElement(fareLocator).getText();
             String fareAmountString = fareText.replaceAll("[^0-9.]", "");  // Extract only numbers and dots
 
             if (!fareAmountString.isEmpty()) {
@@ -811,12 +811,12 @@ public class CommonFunctionsWeb extends Base {
 
 
     public static void pageRefresh() {
-        driver.navigate().refresh();
+        Base.getDriver().navigate().refresh();
     }
 
     public static void waitForElementTextToBe(By locator, String expectedText, int timeoutInSeconds, String elementName) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(Base.getDriver(), Duration.ofSeconds(timeoutInSeconds));
             wait.until(ExpectedConditions.textToBePresentInElementLocated(locator, expectedText));
             testLevelReport.get().log(Status.PASS, elementName + " is visible");
 
@@ -829,7 +829,7 @@ public class CommonFunctionsWeb extends Base {
 
     public static void waitForVisibleElementTextToBe(By locator, String expectedText, int timeoutInSeconds, String elementName) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(Base.getDriver(), Duration.ofSeconds(timeoutInSeconds));
             wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             testLevelReport.get().log(Status.PASS, elementName + " is visible");
 
@@ -841,8 +841,8 @@ public class CommonFunctionsWeb extends Base {
 
     public static void hoverOverElement(By locator) {
         try {
-            WebElement element = driver.findElement(locator);
-            Actions actions = new Actions(driver);
+            WebElement element = Base.getDriver().findElement(locator);
+            Actions actions = new Actions(Base.getDriver());
             actions.moveToElement(element).perform(); // Perform hover action
             logger.info("Mouse hovered over element" + locator);
             testLevelReport.get().log(Status.PASS, "Mouse hovered");
@@ -855,13 +855,13 @@ public class CommonFunctionsWeb extends Base {
     }
 
     public static void scrollDown() {
-        JavascriptExecutor js = (JavascriptExecutor) driver;
+        JavascriptExecutor js = (JavascriptExecutor) Base.getDriver();
         js.executeScript("window.scrollBy(0, 200);");
     }
 
     public static void scrollUp() {
 
-        JavascriptExecutor js = (JavascriptExecutor) driver;
+        JavascriptExecutor js = (JavascriptExecutor) Base.getDriver();
         js.executeScript("window.scrollBy(0,-500)");
 
     }

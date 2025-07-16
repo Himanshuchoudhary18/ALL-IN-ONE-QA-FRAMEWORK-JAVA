@@ -8,8 +8,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Collection;
 
-import static utilities.Base.property;
-
 /**
  * Need to improve the way waits used in the framework
  * i.e created this class to have a common place for waits
@@ -23,7 +21,7 @@ public class Waits {
         if (DEFAULT_FIND_ELEMENT_TIMEOUT != 0) {
             return DEFAULT_FIND_ELEMENT_TIMEOUT;
         }
-        DEFAULT_FIND_ELEMENT_TIMEOUT = Long.parseLong(property.getProperty("timeout"));
+        DEFAULT_FIND_ELEMENT_TIMEOUT = Long.parseLong(Base.getProperty().getProperty("timeout"));
         return DEFAULT_FIND_ELEMENT_TIMEOUT;
     }
 

@@ -8,21 +8,21 @@ import utilities.Base;
 import java.util.Objects;
 
 public class ConnectionManagerMongo {
-    private static String dbHost;
-    private static String dbUser;
-    private static String dbPassword;
-    private static String dbName;
-    private static int dbPort;
-    private static Boolean isLocalRun;
-    private static MongoClient mongoClient;
-    private static MongoDatabase database;
+    private static final ThreadLocal<String> dbHost = new ThreadLocal<>();
+    private static final ThreadLocal<String> dbUser = new ThreadLocal<>();
+    private static final ThreadLocal<String> dbPassword = new ThreadLocal<>();
+    private static final ThreadLocal<String> dbName = new ThreadLocal<>();
+    private static final ThreadLocal<Integer> dbPort = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> isLocalRun = new ThreadLocal<>();
+    private static final ThreadLocal<MongoClient> mongoClient = new ThreadLocal<>();
+    private static final ThreadLocal<MongoDatabase> database = new ThreadLocal<>();
 
 
     public static void connectToDatabaseMongo() {
-        String connectionString = "mongodb://" + dbUser + ":" + dbPassword + "@" + dbHost + ":" + dbPort + "/" + dbName;
+        String connectionString = "mongodb://" + dbUser.get() + ":" + dbPassword.get() + "@" + dbHost.get() + ":" + dbPort.get() + "/" + dbName.get();
         try {
-            mongoClient = new MongoClient(new MongoClientURI(connectionString));
-            database = mongoClient.getDatabase(dbName);
+            mongoClient.set(new MongoClient(new MongoClientURI(connectionString)));
+            database.set(mongoClient.get().getDatabase(dbName.get()));
             Base.logger.info("Connected to MongoDB successfully!");
         } catch (Exception e) {
             Base.logger.error("Error connecting to Mongo Database: ", e);
@@ -31,8 +31,8 @@ public class ConnectionManagerMongo {
 
     public static void closeMongoConnection() {
         try {
-            if (!Objects.isNull(mongoClient)) {
-                mongoClient.close();
+            if (!Objects.isNull(mongoClient.get())) {
+                mongoClient.get().close();
                 Base.logger.info("Closed the Mongo database connection");
             }
         } catch (Exception e) {

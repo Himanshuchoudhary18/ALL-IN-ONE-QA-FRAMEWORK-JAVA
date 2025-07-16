@@ -17,12 +17,14 @@ import java.net.URLEncoder;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ApiUtils extends Base {
-    public static Map<String, Long> latencyMap = new HashMap<>();
-    public static List<APIResponseTime> apiList = new ArrayList<>();
+    public static Map<String, Long> latencyMap = new ConcurrentHashMap<>();
+    public static List<APIResponseTime> apiList = new CopyOnWriteArrayList<>();
 
     static Logger logger = LoggerFactory.getLogger(ApiUtils.class);
     private ThreadLocal<HashMapNew> sTestDetails = new ThreadLocal<HashMapNew>() {

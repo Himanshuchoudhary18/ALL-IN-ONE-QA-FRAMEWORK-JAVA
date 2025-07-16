@@ -66,7 +66,7 @@ public class CommonFunctionsAPI {
         Date date1 = new Date();
         Calendar c = Calendar.getInstance();
         // Set timezone based on country code
-        if (Base.property.getProperty("countryCode").equalsIgnoreCase("AE")) {
+        if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("AE")) {
             c.setTimeZone(TimeZone.getTimeZone("Asia/Dubai"));
         } else {
             c.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
@@ -81,7 +81,7 @@ public class CommonFunctionsAPI {
     }
 
     public static double getRandomLatitude() {
-        if (Base.property.getProperty("countryCode").equalsIgnoreCase("IN")) {
+        if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("IN")) {
             double latInRadians = Math.toRadians(centralLatitude);
             double latOffset = maxRadiusKm / 111.32; // 1 degree of latitude is approximately 111.32 km
             double minLat = centralLatitude - latOffset;
@@ -97,7 +97,7 @@ public class CommonFunctionsAPI {
     }
 
     public static double getRandomLatitude(int range) {
-        if (Base.property.getProperty("countryCode").equalsIgnoreCase("IN")) {
+        if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("IN")) {
             double latOffset = range / 111.32; // 1 degree of latitude is approximately 111.32 km
             double minLat = centralLatitude - latOffset;
             double maxLat = centralLatitude + latOffset;
@@ -210,7 +210,7 @@ public class CommonFunctionsAPI {
     }
 
     public static double getRandomLongitude() {
-        if (Base.property.getProperty("countryCode").equalsIgnoreCase("IN")) {
+        if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("IN")) {
             double lonInRadians = Math.toRadians(centralLongitude);
             double lonOffset = maxRadiusKm / (111.32 * Math.cos(centralLongitude));
             double minLon = centralLongitude - lonOffset;
@@ -242,7 +242,7 @@ public class CommonFunctionsAPI {
     }
 
     public static double getRandomLongitude(int range) {
-        if (Base.property.getProperty("countryCode").equalsIgnoreCase("IN")) {
+        if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("IN")) {
             double lonOffset = range / (111.32 * Math.cos(centralLongitude));
             double minLon = centralLongitude - lonOffset;
             double maxLon = centralLongitude + lonOffset;
@@ -256,7 +256,7 @@ public class CommonFunctionsAPI {
     }
 
     public static double getTraceLat() {
-        if (Base.property.getProperty("countryCode").equalsIgnoreCase("IN")) {
+        if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("IN")) {
             double latInRadians = Math.toRadians(centralLatitude);
             double latOffset = maxRadiusKm / 111.32; // 1 degree of latitude is approximately 111.32 km
             double minLat = centralLatitude - latOffset;
@@ -272,7 +272,7 @@ public class CommonFunctionsAPI {
     }
 
     public static double getTraceLong() {
-        if (Base.property.getProperty("countryCode").equalsIgnoreCase("IN")) {
+        if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("IN")) {
             double lonInRadians = Math.toRadians(centralLongitude);
             double lonOffset = maxRadiusKm / (111.32 * Math.cos(centralLongitude));
             double minLon = centralLongitude - lonOffset;
@@ -319,9 +319,9 @@ public class CommonFunctionsAPI {
     public static long getTimeStampInMiliSeconds(int hours) {
         // Get the current epoch timestamp in milliseconds
         TimeZone timeZone = null;
-        if (Base.property.getProperty("countryCode").equalsIgnoreCase("AE")) {
+        if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("AE")) {
             timeZone = TimeZone.getTimeZone("Asia/Dubai"); // United Arab Emirates time zone
-        } else if (Base.property.getProperty("countryCode").equalsIgnoreCase("IN")) {
+        } else if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("IN")) {
             timeZone = TimeZone.getTimeZone("Asia/Kolkata"); // Indian time zone
         } else {
             Assert.fail("Invalid Input, Only taken AE and IN as inputs");
@@ -347,9 +347,9 @@ public class CommonFunctionsAPI {
     public static long getTimeStampInMiliSeconds(float hours) {
         // Get the current epoch timestamp in milliseconds
         TimeZone timeZone = null;
-        if (Base.property.getProperty("countryCode").equalsIgnoreCase("AE")) {
+        if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("AE")) {
             timeZone = TimeZone.getTimeZone("Asia/Dubai"); // United Arab Emirates time zone
-        } else if (Base.property.getProperty("countryCode").equalsIgnoreCase("IN")) {
+        } else if (Base.getProperty().getProperty("countryCode").equalsIgnoreCase("IN")) {
             timeZone = TimeZone.getTimeZone("Asia/Kolkata"); // Indian time zone
         } else {
             Assert.fail("Invalid Input, Only taken AE and IN as inputs");
@@ -451,7 +451,7 @@ public class CommonFunctionsAPI {
     }
 
     public static DateTime getDateTimeNowBasedOnRegion() {
-        return DateTime.now().withZone(DateTimeZone.forID(Base.property.getProperty("timeZone")));
+        return DateTime.now().withZone(DateTimeZone.forID(Base.getProperty().getProperty("timeZone")));
     }
 
 }

@@ -1,7 +1,6 @@
 package utilsDatabase;
 
 import com.jcraft.jsch.JSchException;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import utilities.Base;
 
@@ -17,35 +16,42 @@ public class ConnectionManagerMySQL {
     private static final int CONNECTION_TIMEOUT = 30000;
     private static final int MAX_CONNECTION_RETRIES = 3;
     private static final int CONNECTION_RETRY_DELAY_MS = 1000;
-    public static Connection dbConnection;
-    @Setter
-    private static String dbHost;
-    @Setter
-    private static String dbUser;
-    @Setter
-    private static String dbPassword;
-    @Setter
-    private static String dbName;
-    @Setter
-    private static int dbPort = 3306;
-    @Setter
-    private static Boolean isLocalRun;
+    private static final ThreadLocal<Connection> dbConnection = new ThreadLocal<>();
+    private static final ThreadLocal<String> dbHost = new ThreadLocal<>();
+    private static final ThreadLocal<String> dbUser = new ThreadLocal<>();
+    private static final ThreadLocal<String> dbPassword = new ThreadLocal<>();
+    private static final ThreadLocal<String> dbName = new ThreadLocal<>();
+    private static final ThreadLocal<Integer> dbPort = ThreadLocal.withInitial(() -> 3306);
+    private static final ThreadLocal<Boolean> isLocalRun = new ThreadLocal<>();
+
+    public static void setDbHost(String value) { dbHost.set(value); }
+    public static String getDbHost() { return dbHost.get(); }
+    public static void setDbUser(String value) { dbUser.set(value); }
+    public static String getDbUser() { return dbUser.get(); }
+    public static void setDbPassword(String value) { dbPassword.set(value); }
+    public static String getDbPassword() { return dbPassword.get(); }
+    public static void setDbName(String value) { dbName.set(value); }
+    public static String getDbName() { return dbName.get(); }
+    public static void setDbPort(Integer value) { dbPort.set(value); }
+    public static Integer getDbPort() { return dbPort.get(); }
+    public static void setIsLocalRun(Boolean value) { isLocalRun.set(value); }
+    public static Boolean getIsLocalRun() { return isLocalRun.get(); }
 
 
     private static void connectToMySQLDatabase() throws JSchException {
-        connectToMySQLDatabase(dbUser, dbHost, dbPassword, dbName);
+        connectToMySQLDatabase(dbUser.get(), dbHost.get(), dbPassword.get(), dbName.get());
     }
 
     private static void connectToMySQLDatabase(String dbUser, String dbHost, String dbPassword, String dbName) throws JSchException {
         boolean connected = false;
-        int assignedPort = dbPort;
+        int assignedPort = dbPort.get();
         String jdbcHost = "127.0.0.1";
         String jdbcUrl = "jdbc:mysql://" + dbUser + ":" + dbPassword + "@" + jdbcHost + ":" + assignedPort + "/" + dbName + "?serverTimezone=UTC&autoReconnect=true&useSSL=false";
         int retryCount = 0;
         while (!connected && retryCount < MAX_CONNECTION_RETRIES) {
             try {
                 DriverManager.setLoginTimeout(CONNECTION_TIMEOUT / 1000); // set connection timeout
-                dbConnection = DriverManager.getConnection(jdbcUrl);
+                dbConnection.set(DriverManager.getConnection(jdbcUrl));
                 connected = true;
                 Base.logger.info("{} DB Connection successful", dbName);
             } catch (SQLException e) {
@@ -59,7 +65,7 @@ public class ConnectionManagerMySQL {
     }
 
     private static void verifyDatabaseConnection() {
-        assertNotNull("Database connection should not be null.", dbConnection);
+        assertNotNull("Database connection should not be null.", dbConnection.get());
     }
 
     public static void connectToDatabaseMySQL() throws JSchException {
@@ -69,8 +75,8 @@ public class ConnectionManagerMySQL {
 
     public static void closeConnectionDatabaseMySQL() {
         try {
-            if (!Objects.isNull(dbConnection)) {
-                dbConnection.close();
+            if (!Objects.isNull(dbConnection.get())) {
+                dbConnection.get().close();
                 Base.logger.info("DB Connection closed successfully");
             } else {
                 Base.logger.info("DB Connection is already closed");

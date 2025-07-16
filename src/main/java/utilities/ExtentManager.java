@@ -29,9 +29,9 @@ public class ExtentManager {
         } else {
             extent = new ExtentReports();
             extent.attachReporter(getHtmlReporter());
-            extent.setSystemInfo("Application", Base.property.getProperty("type").toUpperCase());
-            extent.setSystemInfo("Environment", Base.property.getProperty("environment").toUpperCase());
-            extent.setSystemInfo("Platform", Base.property.getProperty("platform").toUpperCase());
+            extent.setSystemInfo("Application", Base.getProperty().getProperty("type").toUpperCase());
+            extent.setSystemInfo("Environment", Base.getProperty().getProperty("environment").toUpperCase());
+            extent.setSystemInfo("Platform", Base.getProperty().getProperty("platform").toUpperCase());
             extent.setSystemInfo("OS", System.getProperty("os.name").toUpperCase());
             extent.setSystemInfo("Run_Date", d.toString());
 
@@ -46,7 +46,7 @@ public class ExtentManager {
         htmlReporter = new ExtentHtmlReporter(filePath);
         htmlReporter.config().setChartVisibilityOnOpen(true);
         htmlReporter.config().setDocumentTitle("Infinite Locus Automation Report");
-        htmlReporter.config().setReportName(Base.property.getProperty("type").toUpperCase() + " : Infinite Locus Automation Test Case Execution Report");
+        htmlReporter.config().setReportName(Base.getProperty().getProperty("type").toUpperCase() + " : Infinite Locus Automation Test Case Execution Report");
         htmlReporter.config().setTestViewChartLocation(ChartLocation.TOP);
         htmlReporter.config().setChartVisibilityOnOpen(true);
         htmlReporter.config().setTheme(Theme.STANDARD);

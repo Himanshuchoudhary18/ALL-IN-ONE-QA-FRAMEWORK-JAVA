@@ -23,7 +23,7 @@ public class Automation extends Base {
     @Test(description = "CocaCola Web | Login & Sign Up Flow | LoginSignUp_HLS_001_TC_001 : Home Page Validations and Invalid Login Credentials Flow", dataProvider = "LoginCredentials", retryAnalyzer = Retry.class, alwaysRun = true, enabled = true, groups = "smoke")
     public void openCocaColaWebsite(String phoneNo, int otp) {
         try {
-            openURL(property.getProperty("application"), true);
+            openURL(Base.getProperty().getProperty("application"), true);
             click(LoginPage.crossButtonOnSurpriseMePopUp, "Close Button on Surprise Me Pop Up");
             click(LoginPage.profileIconOnLoginPage, "Profile Icon");
             click(LoginPage.loginButtonOnProfileDropDown, "Select Login Option");
