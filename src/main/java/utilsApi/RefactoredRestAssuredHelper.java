@@ -11,7 +11,6 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -28,11 +27,11 @@ import static utilsWeb.CommonFunctionsWeb.getScenario;
 
 public class RefactoredRestAssuredHelper {
     private static final Logger logger = LoggerFactory.getLogger(RefactoredRestAssuredHelper.class);
-    public static long latency;
-    protected static String responseToLog;
-    static ValidatableResponse validatableResponse = null;
-    @Getter
-    private static StringBuilder curlCmd;
+    public static StringBuilder curlCmd;
+    public static boolean enableAdditionalFieldsCheckInResponse = Base.property.getProperty("enableAdditionalFieldsCheckInResponse").equalsIgnoreCase("true");
+    private static long latency;
+    private static String responseToLog;
+    private static ValidatableResponse validatableResponse = null;
     private static long currentId = 0;
 
     private static ExtractableResponse<Response> executeRequest(HTTPRequestType requestType, Map<String, String> headerMap, Map<String, String> params, String requestURL, Object requestBody, RequestSpecification spec, RequestConfigs requestConfigs, long expectedStatusCode, String statusCheckKeyPath) {
@@ -170,7 +169,7 @@ public class RefactoredRestAssuredHelper {
     private static void validateStatusCode(ExtractableResponse<Response> response, long expectedStatusCode, String statusCheckKeyPath) {
         if (Base.property.getProperty("statusCheck200").equalsIgnoreCase("true") && expectedStatusCode > 0) {
             if (statusCheckKeyPath == null) {
-                logger.warn("Requested key path is null skipping status code check");
+                logger.warn("Requested key path is null skipping status code check in response data");
                 return;
             }
             String statusCode = CommonFunctionsAPI.getKeyFromResponseJson(response.response(), statusCheckKeyPath);
@@ -178,11 +177,11 @@ public class RefactoredRestAssuredHelper {
         }
     }
 
-    public static RestAssuredConfig getDefaultConfig() {
+    protected static RestAssuredConfig getDefaultConfig() {
         return RestAssured.config().httpClient(HttpClientConfig.httpClientConfig().setParam("http.connection.timeout", 60000).setParam("http.socket.timeout", 60000));
     }
 
-    public static RequestSpecification getRequestSpecification(Filter filter, RequestConfigs requestConfigs) {
+    protected static RequestSpecification getRequestSpecification(Filter filter, RequestConfigs requestConfigs) {
         RestAssuredConfig config = getDefaultConfig();
         RequestSpecification requestSpec = (filter != null) ? RestAssured.given().filter(filter).config(config) : RestAssured.given().config(config);
 
@@ -193,7 +192,7 @@ public class RefactoredRestAssuredHelper {
         return requestSpec;
     }
 
-    public static String getRequestBody(Object requestBody) throws JsonProcessingException {
+    protected static String getRequestBody(Object requestBody) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.convertValue(requestBody, JsonNode.class);
         return objectMapper.writeValueAsString(jsonNode);
@@ -219,11 +218,11 @@ public class RefactoredRestAssuredHelper {
         return response;
     }
 
-    public static ExtractableResponse<Response> callApi(HTTPRequestType requestType, Map<String, String> headerMap, Map<String, String> params, String requestURL, Object requestBody, RequestSpecification spec, RequestConfigs requestConfigs, int retry, long expectedStatusCode) {
+    private static ExtractableResponse<Response> callApi(HTTPRequestType requestType, Map<String, String> headerMap, Map<String, String> params, String requestURL, Object requestBody, RequestSpecification spec, RequestConfigs requestConfigs, int retry, long expectedStatusCode) {
         return callApi(requestType, headerMap, params, requestURL, requestBody, spec, requestConfigs, retry, expectedStatusCode, "statusCode");
     }
 
-    public static void setLatencyToFile(String fileName) {
+    protected static void setLatencyToFile(String fileName) {
         ObjectMapper objectMapper = new ObjectMapper();
 //        Old way of writing latency data to file
         try {

@@ -82,7 +82,7 @@ public class Base {
 //        ExtentTest parent = extent.createTest(getClass().getAnnotation(Test.class).description());
         parent.assignCategory("Epic_Level_Report");
         classLevelReport.set(parent);
-        classLevelReport.get().log(Status.INFO, "Execution Started for : " + getClass().getSimpleName());//getClass().getAnnotation(Test.class).description());
+        classLevelReport.get().log(Status.INFO, "Execution Started for : " + getClass().getAnnotation(Test.class).description());
 
         //Creates a test Node at class level in the extent report
         className = this.getClass().getSimpleName();
@@ -95,20 +95,18 @@ public class Base {
         testName = m.getName();
         testRunId = m.getName();
         //Creates a test Node at class level in the extent report
-        ExtentTest test = classLevelReport.get().createNode(m.getName().toUpperCase());
-
-//        ExtentTest test = classLevelReport.get().createNode(m.getAnnotation(Test.class).description());
+//        ExtentTest test = classLevelReport.get().createNode(m.getName());
+        ExtentTest test = classLevelReport.get().createNode(m.getAnnotation(Test.class).description());
         test.assignCategory("Test_Level_Report");
         testLevelReport.set(test);
-//
-//        testLevelReport.get().log(Status.INFO, "Execution Started for : " + result.getMethod().getMethodName().toUpperCase());
+        testLevelReport.get().log(Status.INFO, "Execution Started for : " + m.getAnnotation(Test.class).description());
     }
 
     @Parameters({"platformName"})
     @AfterMethod(alwaysRun = true)
     public void killMethod(@Optional("platformName") String platformName, Method m, ITestResult result) throws Exception {
         logger.info("Ended Execution of Test Case : " + m.getAnnotation(Test.class).description());
-        testLevelReport.get().log(Status.INFO, "Execution Ended for : " + result.getMethod().getMethodName().toUpperCase());
+        testLevelReport.get().log(Status.INFO, "Execution Ended for : " + m.getAnnotation(Test.class).description());
         if (!result.isSuccess()) {
             try {
                 testLevelReport.get().addScreenCaptureFromPath(takeScreenShotWeb(result.getMethod().getMethodName()).getPath().substring(26));
@@ -126,8 +124,8 @@ public class Base {
 
     @AfterClass(alwaysRun = true)
     public void killClass() throws Exception {
-        classLevelReport.get().log(Status.INFO, "Execution Ended for : " + getClass().getSimpleName());
-        logger.info("Ended Execution of Test Case : ");
+        classLevelReport.get().log(Status.INFO, "Execution Started for : " + getClass().getAnnotation(Test.class).description());
+        logger.info("Ended Execution of Test Class : " + getClass().getAnnotation(Test.class).description());
         DriverManager.killDriverInstance();
     }
 

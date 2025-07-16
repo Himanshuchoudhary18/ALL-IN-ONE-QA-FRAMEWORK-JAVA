@@ -49,7 +49,7 @@
         <selenium.version>4.34.0</selenium.version>
         <gatling.version>3.10.3</gatling.version>
         <gatling-maven-plugin.version>4.7.0</gatling-maven-plugin.version>
-        <restassured.version>5.3.2</restassured.version>
+        <restassured.version>5.5.5</restassured.version>
         <testng.version>7.9.0</testng.version>
     </properties>
     <dependencies>

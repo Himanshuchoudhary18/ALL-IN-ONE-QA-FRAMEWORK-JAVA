@@ -1,7 +1,11 @@
 package utilsWeb;
 
 import com.aventstack.extentreports.Status;
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.cucumber.java.Scenario;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
@@ -14,6 +18,9 @@ import org.testng.Assert;
 import utilities.Base;
 import utilities.DriverManager;
 import utilities.Waits;
+import utilsApi.RefactoredRestAssuredHelper;
+import utilsApi.RequestConfigs;
+import utilsApi.StandardResponse;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -26,6 +33,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static utilities.Constants.SCREENSHOT_PATH;
 
@@ -33,6 +41,38 @@ import static utilities.Constants.SCREENSHOT_PATH;
 public class CommonFunctionsWeb extends Base {
 
     private static Scenario scenario;
+
+    public static <T> T callApi(RefactoredRestAssuredHelper.HTTPRequestType requestType, Map<String, String> headerMap, Map<String, String> params, String requestURL, Object requestBody, RequestSpecification spec, RequestConfigs requestConfigs, int retry, long expectedStatusCode, String statusCheckKeyPath, Class<T> responseType) throws Exception {
+        try {
+            ExtractableResponse<Response> response = null;
+            response = RefactoredRestAssuredHelper.callApi(requestType, headerMap, params, requestURL, requestBody, spec, requestConfigs, retry, expectedStatusCode, statusCheckKeyPath);
+            testLevelReport.get().log(Status.PASS, "Able to hit API");
+            testLevelReport.get().log(Status.INFO, String.valueOf(RefactoredRestAssuredHelper.curlCmd));
+            testLevelReport.get().log(Status.INFO, response.response().asPrettyString());
+            return StandardResponse.parseJsonResponse(response.response().asPrettyString(), responseType);
+        } catch (Exception e) {
+            testLevelReport.get().log(Status.FAIL, "Unable to hit API : " + RefactoredRestAssuredHelper.curlCmd);
+            testLevelReport.get().log(Status.DEBUG, e);
+            Assert.fail("Unable to hit API : " + RefactoredRestAssuredHelper.curlCmd + " \n\n With Exception ", e);
+            return null;
+        }
+    }
+
+    public static <T> StandardResponse<T> callApi(RefactoredRestAssuredHelper.HTTPRequestType requestType, Map<String, String> headerMap, Map<String, String> params, String requestURL, Object requestBody, RequestSpecification spec, RequestConfigs requestConfigs, int retry, long expectedStatusCode, String statusCheckKeyPath, TypeReference<StandardResponse<T>> typeReference) throws Exception {
+        try {
+            ExtractableResponse<Response> response = null;
+            response = RefactoredRestAssuredHelper.callApi(requestType, headerMap, params, requestURL, requestBody, spec, requestConfigs, retry, expectedStatusCode, statusCheckKeyPath);
+            testLevelReport.get().log(Status.PASS, "Able to hit API");
+            testLevelReport.get().log(Status.INFO, String.valueOf(RefactoredRestAssuredHelper.curlCmd));
+            testLevelReport.get().log(Status.INFO, response.response().asPrettyString());
+            return StandardResponse.parseJsonResponse(response.response().asPrettyString(), typeReference);
+        } catch (Exception e) {
+            testLevelReport.get().log(Status.FAIL, "Unable to hit API : " + RefactoredRestAssuredHelper.curlCmd);
+            testLevelReport.get().log(Status.DEBUG, e);
+            Assert.fail("Unable to hit API : " + RefactoredRestAssuredHelper.curlCmd + " \n\n With Exception ", e);
+            return null;
+        }
+    }
 
     public static void openURL(String application) throws InterruptedException {
         String url = null;
