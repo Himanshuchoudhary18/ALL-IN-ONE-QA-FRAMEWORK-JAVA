@@ -4,12 +4,11 @@ import com.jcraft.jsch.JSchException;
 import lombok.extern.slf4j.Slf4j;
 import utilities.Base;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Objects;
+import java.sql.*;
+import java.util.*;
 
 import static org.testng.AssertJUnit.assertNotNull;
+import static utilsDatabase.SSHConnectionManager.*;
 
 @Slf4j
 public class ConnectionManagerMySQL {
@@ -44,7 +43,13 @@ public class ConnectionManagerMySQL {
 
     private static void connectToMySQLDatabase(String dbUser, String dbHost, String dbPassword, String dbName) throws JSchException {
         boolean connected = false;
-        int assignedPort = dbPort.get();
+        int assignedPort;
+        if (!isLocalRun.get()) {
+            // JDBC connection through SSH tunnel
+            assignedPort = setPortForwarding(0, dbHost, dbPort.get());
+        } else {
+            assignedPort = getDbPort();
+        }
         String jdbcHost = "127.0.0.1";
         String jdbcUrl = "jdbc:mysql://" + dbUser + ":" + dbPassword + "@" + jdbcHost + ":" + assignedPort + "/" + dbName + "?serverTimezone=UTC&autoReconnect=true&useSSL=false";
         int retryCount = 0;
@@ -69,6 +74,7 @@ public class ConnectionManagerMySQL {
     }
 
     public static void connectToDatabaseMySQL() throws JSchException {
+        connectToCommonSSHServer();
         connectToMySQLDatabase();
         verifyDatabaseConnection();
     }
@@ -83,7 +89,36 @@ public class ConnectionManagerMySQL {
             }
         } catch (SQLException e) {
             Base.logger.error("Error occurred while closing the DB connection: {}", e.getMessage(), e);
+        } finally {
+            disconnectSSHSessionDeletePortForwarding();
         }
+    }
+
+    public static List<Map<String, String>> executeSelectQuery(String query) {
+        List<Map<String, String>> resultList = new ArrayList<>();
+        try (Statement statement = dbConnection.get().createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
+
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+
+            while (resultSet.next()) {
+                Map<String, String> row = new HashMap<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    String columnName = metaData.getColumnLabel(i);
+                    String value = resultSet.getString(i);
+                    row.put(columnName, value);
+                }
+                resultList.add(row);
+            }
+
+            Base.logger.info("Query executed successfully: {}", query);
+
+        } catch (SQLException e) {
+            Base.logger.error("Error executing SELECT query: {}", e.getMessage(), e);
+        }
+
+        return resultList;
     }
 
 }
