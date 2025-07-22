@@ -100,7 +100,7 @@ public class CommonFunctionsWeb extends Base {
     public static void openURL(String application) throws InterruptedException {
         String url = null;
         try {
-            url = "https://" + application + "." + Base.getProperty().getProperty("domain");
+            url = Base.getProperty().getProperty("protocol") + "://" + application + "." + Base.getProperty().getProperty("domain");
             Base.setDriver(DriverManager.getDriverInstance(Base.getProperty().getProperty("browser"), url));
             Base.getDriver().manage().window().maximize();
             loadPageWithRetry(url);
