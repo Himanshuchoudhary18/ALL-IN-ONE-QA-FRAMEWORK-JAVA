@@ -174,6 +174,56 @@ public class CommonFunctionsWeb extends Base {
         }
     }
 
+    public static void safeClick(By locator, String log) {
+        try {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(10));
+            WebElement el = wait.until(ExpectedConditions.elementToBeClickable(locator));
+            el.click();
+            System.out.println(log);
+        } catch (Exception e) {
+            System.out.println("Normal click failed, trying JS click: " + log);
+            WebElement el = getDriver().findElement(locator);
+            ((JavascriptExecutor) getDriver()).executeScript("arguments[0].click();", el);
+        }
+    }
+
+    /**
+     * Uploads a file into the “Cover photo” (or Profile Picture) widget.
+     * @param file       the File object you want to upload
+     * @param logMessage a friendly message to report in your test log
+     */
+    public static void upload(File file, String logMessage) {
+        WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(10));
+
+        // 1) Click the “Edit” button to open the upload widget
+        WebElement editBtn = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.xpath("//button[normalize-space()='Edit']")));
+        editBtn.click();
+
+        // 2) Wait for the <input type="file"> to be present in the DOM
+        WebElement fileInput = wait.until(
+                ExpectedConditions.presenceOfElementLocated(
+                        By.xpath("//input[@type='file']")));
+
+        // 3) sendKeys() bypasses the OS file picker entirely:
+        fileInput.sendKeys(file.getAbsolutePath());
+
+        // 4) If your UI has a separate “Open” or “Upload” button, click it:
+        try {
+            WebElement openBtn = wait.until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.xpath("//button[normalize-space()='Open' or normalize-space()='Upload']")));
+            openBtn.click();
+        } catch (TimeoutException e) {
+            // assume sendKeys alone triggered the upload — that’s OK
+        }
+
+        // 5) Log your message in your test report
+        testLevelReport.get().log(Status.PASS, logMessage);
+    }
+
+
     public static String fetchTextOfElement(WebElement element, String elementName) {
         String elementValue = "";
         try {

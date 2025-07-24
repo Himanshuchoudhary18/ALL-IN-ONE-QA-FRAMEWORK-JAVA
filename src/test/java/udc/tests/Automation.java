@@ -26,24 +26,31 @@ public class Automation extends Base {
               click(LoginPage.visitWebsiteButton, "Clicked On Visit Website Button");
 
               // My Profile -> Dashboard Page
-              enterCharacter(LoginPage.emailButton, "brampton@ultimatedrivers.ca", "Email");
-              enterCharacter(LoginPage.passwordButton, "Mehta@12345", "Password");
+              enterCharacter(LoginPage.emailButton, "brampton@ultimatedrivers.ca", "Email Submitted");
+              enterCharacter(LoginPage.passwordButton, "Mehta@12345", "Password Submitted");
               click(LoginPage.LoginButton, "Login Button Clicked");
-              click(LoginPage.EditHomepage, "Clicked");
-              click(LoginPage.SelectSignOnHomePage, "Selected Signature");
-              click(LoginPage.SelectSignFormat, "Format checkbox selected");
-              click(LoginPage.SubmitSignature, "Submitting Signature");
-              click(LoginPage.crossButton, "Close button clicked");
-              click(LoginPage.SubmitButton1, "Submit clicked");
-              // click(LoginPage.SubmitButton2, "Submit clicked again");
 
-              Thread.sleep(5000);
+              // UI changes so this part is removed (Signature)
+              // click(LoginPage.EditHomepage, "Clicked");
+              // click(LoginPage.SelectSignOnHomePage, "Selected Signature");
+              // click(LoginPage.SelectSignFormat, "Format checkbox selected");
+              // click(LoginPage.SubmitSignature, "Submitting Signature");
+              // click(LoginPage.crossButton, "Close button clicked");
 
-//            enterCharacter(LoginPage.mobilenumber, phoneNo, "input number");
-//            ConnectionManagerPostgreSQL.connectToDatabasePostgreSQL();
-//            enterCharacter(LoginPage.inputotp, LoginPage.getOtpFromPostgreSQL("SELECT * FROM otp_logs WHERE mobile_no = '" + phoneNo + "' ORDER BY created_on DESC;\n","otp"), "Input box for otp");
-//            click(LoginPage.submitLoginButton,"Submit Login Button");
-//            isElementDisplayed(LoginPage.surpriseMePopTitle,"Surprise Me Pop Up Title Image");
+              click(LoginPage.ClickRemoveProfilePhoto, "Removed Profile Photo");
+              Thread.sleep(1000);
+              click(LoginPage.ClickEditProfilePhoto, "Clicked on Edit Photo");
+              // Added safeClick in CommonFunctionsWeb Page for JSExecutor if it fails (no matter the Button is hidden or not appearing properly)
+              // safeClick(LoginPage.SubmitButton1, "Submit clicked with Safe Button");
+
+
+
+              Thread.sleep(4000);
+              // enterCharacter(LoginPage.mobilenumber, phoneNo, "input number");
+              // ConnectionManagerPostgreSQL.connectToDatabasePostgreSQL();
+              // enterCharacter(LoginPage.inputotp, LoginPage.getOtpFromPostgreSQL("SELECT * FROM otp_logs WHERE mobile_no = '" + phoneNo + "' ORDER BY created_on DESC;\n","otp"), "Input box for otp");
+              // click(LoginPage.submitLoginButton,"Submit Login Button");
+              // isElementDisplayed(LoginPage.surpriseMePopTitle,"Surprise Me Pop Up Title Image");
         } catch (Exception e) {
             testLevelReport.get().log(Status.FAIL, "Test Execution Failed for : " + getClass().getAnnotation(Test.class).description());
         } finally {

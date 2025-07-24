@@ -30,6 +30,7 @@ public class DriverManager extends Base {
             if (browser.equalsIgnoreCase("CHROME")) {
                 ChromeOptions options = new ChromeOptions();
                 options.addArguments("--remote-allow-origins=*");
+
                 // By-pass CORS
                 options.addArguments("--disable-web-security");
                 options.addArguments("--allow-running-insecure-content");
