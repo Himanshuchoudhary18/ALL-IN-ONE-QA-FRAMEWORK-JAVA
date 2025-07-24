@@ -18,11 +18,11 @@ public class Automation extends Base {
     @DataProvider(name = "LoginCredentials")
     public Object[][] createData1() {
         return new Object[][]{
-                {"7206391749", 1234}
+                {"7206391749", "1212"}
         };
     }
 
-    @Test(description = "CocaCola Web | Login & Sign Up Flow | LoginSignUp_HLS_001_TC_001 : Home Page Validations and Invalid Login Credentials Flow", dataProvider = "LoginCredentials", retryAnalyzer = Retry.class, alwaysRun = true, enabled = true, groups = "smoke")
+    @Test(description = "CocaCola Web | Login & Sign Up Flow | LoginSignUp_HLS_001_TC_001 : Home Page Validations and Invalid Login Credentials Flow", retryAnalyzer = Retry.class, alwaysRun = true, groups = "smoke")
     public void openCocaColaWebsite(String phoneNo, int otp) {
         try {
             openURL(Base.getProperty().getProperty("application"), true);

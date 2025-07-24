@@ -4,6 +4,7 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,6 +174,7 @@ public class Base {
     /**
      * Handles reporting and driver cleanup after each test method.
      */
+    @SneakyThrows
     @Parameters({"platformName"})
     @AfterMethod(alwaysRun = true)
     public void killMethod(@Optional("platformName") String platformName, final Method m, final ITestResult result) {
@@ -198,6 +200,7 @@ public class Base {
     /**
      * Handles reporting and driver cleanup after each test class.
      */
+    @SneakyThrows
     @AfterClass(alwaysRun = true)
     public void killClass() {
         String description = getTestDescription(getClass());

@@ -11,6 +11,7 @@ import org.testng.Assert;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class DriverManager extends Base {
     static Logger logger = LoggerFactory.getLogger(DriverManager.class);
@@ -29,6 +30,10 @@ public class DriverManager extends Base {
             if (browser.equalsIgnoreCase("CHROME")) {
                 ChromeOptions options = new ChromeOptions();
                 options.addArguments("--remote-allow-origins=*");
+                // By-pass CORS
+                options.addArguments("--disable-web-security");
+                options.addArguments("--allow-running-insecure-content");
+
                 if (Base.getProperty().getProperty("headless").equalsIgnoreCase("true")) {
                     options.addArguments("--headless");
                     options.addArguments("--disable-gpu");
@@ -42,7 +47,7 @@ public class DriverManager extends Base {
                 options.setCapability("browserVersion", "stable");
                 options.setCapability("browserName", "chrome");
                 Map<String, Object> prefs = new HashMap<>();
-                prefs.put("profile.default_content_setting_values.notifications", 1); // 1 = Allow, 2 = Block
+                prefs.put("profile.default_content_setting_values.notifications", Optional.of(1)); // 1 = Allow, 2 = Block
                 options.setExperimentalOption("prefs", prefs);
                 setDriver(new ChromeDriver(options));
             } else {
@@ -56,7 +61,7 @@ public class DriverManager extends Base {
 
     public static void killDriverInstance() {
         if (getDriver() != null) {
-            getDriver().quit();
+            // getDriver().quit();
             setDriver(null);
         }
     }

@@ -11,6 +11,7 @@ import perf.demo.pageObject.Checkout;
 import perf.demo.pageObject.CmsPage;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static io.gatling.javaapi.core.CoreDsl.*;
@@ -26,12 +27,12 @@ public class SimulationDemoStoreUserJourneysRestructured extends Simulation {
     public void before() {
         System.out.println("Welcome to the Gatling Demo Store! @Author: Sachin Bhardwaj");
         System.out.println("-----------------------------------------------------------");
-        System.out.printf(
-                "Starting the test with %d users and a ramp-up duration of %d seconds with total duration %d seconds --%n",
-                USER_COUNT,
-                RAMP_DURATION.getSeconds(),
-                TEST_DURATION.getSeconds()
-        );
+//        System.out.printf(
+//                "Starting the test with %d users and a ramp-up duration of %d seconds with total duration %d seconds --%n",
+//                USER_COUNT,
+//                RAMP_DURATION.getSeconds(),
+//                TEST_DURATION.getSeconds()
+//        );
         System.out.println("-----------------------------------------------------------");
     }
     @Override
@@ -41,7 +42,7 @@ public class SimulationDemoStoreUserJourneysRestructured extends Simulation {
 
     private static final ChainBuilder initSession =
             exec(flushCookieJar())
-                    .exec(session -> session.set("randomNumber", ThreadLocalRandom.current().nextInt()))
+                    .exec(session -> session.set("randomNumber", Optional.of(ThreadLocalRandom.current().nextInt())))
 //                    .exec(session -> session.set("customerLoggedIn", false))
 //                    .exec(session -> session.set("cartTotal", 0))
                     .exec(addCookie(Cookie("sessionID", SessionId.random()).withDomain(DOMAIN)));
