@@ -40,6 +40,7 @@ public class Automation extends Base {
               click(LoginPage.ClickRemoveProfilePhoto, "Removed Profile Photo");
               Thread.sleep(1000);
               click(LoginPage.ClickEditProfilePhoto, "Clicked on Edit Photo");
+
               // Added safeClick in CommonFunctionsWeb Page for JSExecutor if it fails (no matter the Button is hidden or not appearing properly)
               // safeClick(LoginPage.SubmitButton1, "Submit clicked with Safe Button");
 
