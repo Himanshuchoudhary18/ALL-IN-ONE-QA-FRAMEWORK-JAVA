@@ -2,12 +2,15 @@ package udc.tests;
 
 import com.aventstack.extentreports.Status;
 import com.redis.Log;
+import org.openqa.selenium.WebElement;
 import org.testng.annotations.Test;
 import qa.Retry;
 import udc.pages.LoginPage;
 import utilities.Base;
 import utilsDatabase.ConnectionManagerMySQL;
+import utilsWeb.CommonFunctionsWeb;
 
+import static udc.pages.LoginPage.ClickEditProfilePhoto;
 import static utilsWeb.CommonFunctionsWeb.*;
 
 @Test(description = "Sign Up and Login Flow for UDC Website")
@@ -38,11 +41,9 @@ public class Automation extends Base {
               // click(LoginPage.crossButton, "Close button clicked");
 
               click(LoginPage.ClickRemoveProfilePhoto, "Removed Profile Photo");
-              Thread.sleep(1000);
-              click(LoginPage.ClickEditProfilePhoto, "Clicked on Edit Photo");
-
-              // Added safeClick in CommonFunctionsWeb Page for JSExecutor if it fails (no matter the Button is hidden or not appearing properly)
-              // safeClick(LoginPage.SubmitButton1, "Submit clicked with Safe Button");
+              uploadViaNativeDialog(LoginPage.ClickEditProfilePhoto,"FAQs","Profile Picture");
+              System.out.println("Photo uploaded");
+              safeClick(LoginPage.SubmitButton1, "Submit clicked with Safe Button");
 
 
 
@@ -52,6 +53,7 @@ public class Automation extends Base {
               // enterCharacter(LoginPage.inputotp, LoginPage.getOtpFromPostgreSQL("SELECT * FROM otp_logs WHERE mobile_no = '" + phoneNo + "' ORDER BY created_on DESC;\n","otp"), "Input box for otp");
               // click(LoginPage.submitLoginButton,"Submit Login Button");
               // isElementDisplayed(LoginPage.surpriseMePopTitle,"Surprise Me Pop Up Title Image");
+
         } catch (Exception e) {
             testLevelReport.get().log(Status.FAIL, "Test Execution Failed for : " + getClass().getAnnotation(Test.class).description());
         } finally {

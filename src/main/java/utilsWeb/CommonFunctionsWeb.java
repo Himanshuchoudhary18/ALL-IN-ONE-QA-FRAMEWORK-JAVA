@@ -23,6 +23,9 @@ import utilsApi.RequestConfigs;
 import utilsApi.StandardResponse;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -201,19 +204,6 @@ public class CommonFunctionsWeb extends Base {
         }
     }
 
-    public static String fetchTextOfElement(By element, String elementName) {
-        String elementValue = "";
-        try {
-            elementValue = fluentWait(element).getText();
-            testLevelReport.get().log(Status.PASS, "Fetched Value for element : " + elementName);
-            return elementValue;
-        } catch (Exception e) {
-            testLevelReport.get().log(Status.FAIL, "Unable to fetch value for element : " + elementName);
-            testLevelReport.get().log(Status.DEBUG, e);
-            Assert.fail("Unable to fetch value for element : " + elementName);
-            return elementValue;
-        }
-    }
 
     public static String fetchValueOfElement(By element, String elementName) {
         String elementValue = "";
@@ -568,7 +558,6 @@ public class CommonFunctionsWeb extends Base {
         try {
             JavascriptExecutor js = (JavascriptExecutor) Base.getDriver();
             WebElement Element = fluentWait(locator);
-//             = driver.findElement(locator);
             js.executeScript("arguments[0].scrollIntoView();", Element);
             testLevelReport.get().log(Status.PASS, "scroll to " + elementName);
         } catch (Exception e) {
@@ -578,6 +567,47 @@ public class CommonFunctionsWeb extends Base {
         }
     }
 
+    public static void uploadViaNativeDialog(By triggerLocator,
+                                             String absoluteFilePath,
+                                             String friendlyName) {
+        try {
+            // 1) click the “Edit” or “Upload” button in the page
+            WebElement trigger = Base.getDriver().findElement(triggerLocator);
+            trigger.click();
+            Base.testLevelReport.get().log(Status.INFO, "Clicked “" + friendlyName + "” trigger");
+
+            // 2) copy our file path into the clipboard
+            StringSelection sel = new StringSelection(absoluteFilePath);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, null);
+
+            // 3) wait for the native dialog to open (not recommended)
+            Thread.sleep(1000);
+
+            // 4) Robot: Paste + Enter
+            Robot robot = new Robot();
+            robot.setAutoDelay(100);
+            robot.keyPress(KeyEvent.VK_CONTROL);
+            robot.keyPress(KeyEvent.VK_V);
+            robot.keyRelease(KeyEvent.VK_V);
+            robot.keyRelease(KeyEvent.VK_CONTROL);
+            robot.keyPress(KeyEvent.VK_ENTER);
+            robot.keyRelease(KeyEvent.VK_ENTER);
+
+            // 5) wait for the upload to complete
+            Thread.sleep(1000);
+
+            Base.testLevelReport.get().log(Status.PASS,
+                    friendlyName + " uploaded via native dialog: " + absoluteFilePath);
+
+        } catch (Exception e) {
+            Base.testLevelReport.get().log(Status.FAIL,
+                    "Failed to upload “" + friendlyName + "”: " + absoluteFilePath);
+            Base.testLevelReport.get().log(Status.DEBUG, e);
+            Assert.fail("uploadViaNativeDialog() failed for “" + friendlyName + "”", e);
+        }
+    }
+
+
     public static void takeSnapShot() throws IOException {
         String path = System.getProperty("user.dir");
         String fileWithPath = path + SCREENSHOT_PATH;
@@ -585,15 +615,12 @@ public class CommonFunctionsWeb extends Base {
         TakesScreenshot scrShot = ((TakesScreenshot) Base.getDriver());
 
         //Call getScreenshotAs method to create image file
-
         File SrcFile = scrShot.getScreenshotAs(OutputType.FILE);
 
         //Move image file to new destination
-
         File DestFile = new File(fileWithPath);
 
         //Copy file at destination
-
         FileUtils.copyFile(SrcFile, DestFile);
 
         logger.info("Screenshot Taken");

@@ -32,9 +32,10 @@ public class DriverManager extends Base {
                 options.addArguments("--remote-allow-origins=*");
 
                 // By-pass CORS
-                options.addArguments("--disable-web-security");
-                options.addArguments("--allow-running-insecure-content");
-
+                if (Base.getProperty().getProperty("bypassCORS").equalsIgnoreCase("true")) {
+                    options.addArguments("--disable-web-security");
+                    options.addArguments("--allow-running-insecure-content");
+                }
                 if (Base.getProperty().getProperty("headless").equalsIgnoreCase("true")) {
                     options.addArguments("--headless");
                     options.addArguments("--disable-gpu");
