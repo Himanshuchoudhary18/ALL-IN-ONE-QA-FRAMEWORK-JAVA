@@ -1,42 +1,43 @@
 package utilsDatabase;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import utilities.Base;
 
-import java.util.Objects;
-
 public class ConnectionManagerMongo {
-    private static final ThreadLocal<String> dbHost = new ThreadLocal<>();
-    private static final ThreadLocal<String> dbUser = new ThreadLocal<>();
-    private static final ThreadLocal<String> dbPassword = new ThreadLocal<>();
-    private static final ThreadLocal<String> dbName = new ThreadLocal<>();
-    private static final ThreadLocal<Integer> dbPort = new ThreadLocal<>();
-    private static final ThreadLocal<Boolean> isLocalRun = new ThreadLocal<>();
-    private static final ThreadLocal<MongoClient> mongoClient = new ThreadLocal<>();
-    private static final ThreadLocal<MongoDatabase> database = new ThreadLocal<>();
 
-
-    public static void connectToDatabaseMongo() {
-        String connectionString = "mongodb://" + dbUser.get() + ":" + dbPassword.get() + "@" + dbHost.get() + ":" + dbPort.get() + "/" + dbName.get();
+    private static MongoClient mongoClient;
+    private static MongoDatabase database;
+    public static void connectToDatabaseMongo()
+    {
         try {
-            mongoClient.set(new MongoClient(new MongoClientURI(connectionString)));
-            database.set(mongoClient.get().getDatabase(dbName.get()));
-            Base.logger.info("Connected to MongoDB successfully!");
-        } catch (Exception e) {
-            Base.logger.error("Error connecting to Mongo Database: ", e);
+            String uri = "mongodb+srv://infinite-locus:i4vEqNkDOtWVaULn@erspl-logistics.vd82vdt.mongodb.net/?retryWrites=true&w=majority&appName=udc";
+            String dbName = "udc";
+
+            mongoClient = MongoClients.create(uri);
+            database = mongoClient.getDatabase(dbName);
+            Base.logger.info(" Connected to MongoDB database: " + dbName);
         }
+        catch (Exception e)
+        {
+            Base.logger.error(" Error connecting to MongoDB: ", e);
+        }
+    }
+
+    public static MongoDatabase getDatabase()
+    {
+        return database;
     }
 
     public static void closeMongoConnection() {
         try {
-            if (!Objects.isNull(mongoClient.get())) {
-                mongoClient.get().close();
-                Base.logger.info("Closed the Mongo database connection");
+            if (mongoClient != null) {
+                mongoClient.close();
+                Base.logger.info("MongoDB connection closed");
             }
         } catch (Exception e) {
-            Base.logger.warn("Error occurred while closing the Mongo database connection: ", e);
+            Base.logger.warn("Error while closing MongoDB connection: ", e);
         }
     }
 }

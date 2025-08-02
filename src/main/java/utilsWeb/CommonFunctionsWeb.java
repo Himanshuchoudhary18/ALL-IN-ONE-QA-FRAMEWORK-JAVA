@@ -2,6 +2,8 @@ package utilsWeb;
 
 import com.aventstack.extentreports.Status;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 import io.cucumber.java.Scenario;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -21,11 +23,17 @@ import utilities.Waits;
 import utilsApi.RefactoredRestAssuredHelper;
 import utilsApi.RequestConfigs;
 import utilsApi.StandardResponse;
+import utilsDatabase.ConnectionManagerMongo;
+
+
+import com.mongodb.client.MongoCollection;
+
+import com.mongodb.client.model.Sorts;
+
+import org.bson.Document;
+
 
 import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -34,11 +42,15 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import static utilities.Constants.SCREENSHOT_PATH;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.KeyEvent;
+
 
 
 public class CommonFunctionsWeb extends Base {
@@ -182,7 +194,6 @@ public class CommonFunctionsWeb extends Base {
             WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(10));
             WebElement el = wait.until(ExpectedConditions.elementToBeClickable(locator));
             el.click();
-            System.out.println(log);
         } catch (Exception e) {
             System.out.println("Normal click failed, trying JS click: " + log);
             WebElement el = getDriver().findElement(locator);
@@ -487,7 +498,6 @@ public class CommonFunctionsWeb extends Base {
         }
     }
 
-
     public static void verifyPresenceOfElement(String locator, String elementName, String... parms) {
         try {
             String value = MessageFormat.format(String.valueOf(locator), (Object[]) parms);
@@ -501,6 +511,73 @@ public class CommonFunctionsWeb extends Base {
         }
 
     }
+
+    // STEP 1: Making DB Connection Fetching OTP
+    // STEP 2: Fetching OTP (Latest OTP)
+    public static String getLatestOTP(int count)
+    {
+        String otp = null;
+        try
+        {
+            // Connect to MongoDB
+            ConnectionManagerMongo.connectToDatabaseMongo();
+            MongoDatabase db = ConnectionManagerMongo.getDatabase();
+
+            // Fetch latest OTP document
+            MongoCollection<Document> otpCollection = db.getCollection("otps");
+            Document latestOTPDoc = otpCollection.find()
+                    .sort(Sorts.descending("_id"))
+                    .limit(count)
+                    .first();
+
+            if (latestOTPDoc != null)
+            {
+                Object otpObj = latestOTPDoc.get("otp");
+                otp = otpObj != null ? otpObj.toString() : null;
+            }
+            else
+            {
+                System.out.println(" No OTP records found.");
+            }
+
+        }
+        catch (Exception e)
+        {
+            System.err.println(" Failed to fetch latest OTP: " + e.getMessage());
+        }
+        finally
+        {
+            ConnectionManagerMongo.closeMongoConnection();
+        }
+        return otp;
+    }
+
+    public static List<String> getAllCollectionNames() {
+        List<String> collections = new ArrayList<>();
+
+        try {
+            // Connect to MongoDB
+            ConnectionManagerMongo.connectToDatabaseMongo();
+            MongoDatabase db = ConnectionManagerMongo.getDatabase();
+
+            // Get all collection names
+            MongoIterable<String> collectionNames = db.listCollectionNames();
+            for (String name : collectionNames)
+            {
+                collections.add(name);
+            }
+        }
+        catch (Exception e)
+        {
+            System.err.println("Failed to fetch collections: " + e.getMessage());
+        }
+        finally
+        {
+            ConnectionManagerMongo.closeMongoConnection();
+        }
+        return collections;
+    }
+
 
     public static Boolean verifyPresenceOfElement(By locator, String elementName, String... parms) {
         boolean flag = false;
@@ -567,23 +644,24 @@ public class CommonFunctionsWeb extends Base {
         }
     }
 
-    public static void uploadViaNativeDialog(By triggerLocator,
-                                             String absoluteFilePath,
-                                             String friendlyName) {
+    public static void uploadViaNativeDialog(By triggerLocator, String absoluteFilePath, String friendlyName) {
         try {
-            // 1) click the “Edit” or “Upload” button in the page
-            WebElement trigger = Base.getDriver().findElement(triggerLocator);
+            WebDriver driver = Base.getDriver();
+
+            // 1) Wait and click the upload trigger
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebElement trigger = wait.until(ExpectedConditions.elementToBeClickable(triggerLocator));
             trigger.click();
             Base.testLevelReport.get().log(Status.INFO, "Clicked “" + friendlyName + "” trigger");
 
-            // 2) copy our file path into the clipboard
+            // 2) Copy file path
             StringSelection sel = new StringSelection(absoluteFilePath);
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, null);
 
-            // 3) wait for the native dialog to open (not recommended)
+            // 3) Buffer to ensure native dialog appears
             Thread.sleep(1000);
 
-            // 4) Robot: Paste + Enter
+            // 4) Paste file path and press Enter using Robot
             Robot robot = new Robot();
             robot.setAutoDelay(100);
             robot.keyPress(KeyEvent.VK_CONTROL);
@@ -593,15 +671,19 @@ public class CommonFunctionsWeb extends Base {
             robot.keyPress(KeyEvent.VK_ENTER);
             robot.keyRelease(KeyEvent.VK_ENTER);
 
-            // 5) wait for the upload to complete
-            Thread.sleep(1000);
-
-            Base.testLevelReport.get().log(Status.PASS,
-                    friendlyName + " uploaded via native dialog: " + absoluteFilePath);
+            // 5) Optional wait for any post-upload element to appear/disappear (if needed)
+            try {
+                wait.withTimeout(Duration.ofSeconds(5))
+                        .until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector("div[aria-label*='loading'], .spinner, .loader")));
+            }
+            catch (Exception e)
+            {
+                e.getMessage();
+            }
+            Base.testLevelReport.get().log(Status.PASS, friendlyName + " uploaded via native dialog: " + absoluteFilePath);
 
         } catch (Exception e) {
-            Base.testLevelReport.get().log(Status.FAIL,
-                    "Failed to upload “" + friendlyName + "”: " + absoluteFilePath);
+            Base.testLevelReport.get().log(Status.FAIL, "Failed to upload “" + friendlyName + "”: " + absoluteFilePath);
             Base.testLevelReport.get().log(Status.DEBUG, e);
             Assert.fail("uploadViaNativeDialog() failed for “" + friendlyName + "”", e);
         }
@@ -850,7 +932,8 @@ public class CommonFunctionsWeb extends Base {
     }
 
 
-    public static void pageRefresh() {
+    public static void pageRefresh() throws InterruptedException {
+        Thread.sleep(2000);
         Base.getDriver().navigate().refresh();
     }
 
@@ -863,7 +946,6 @@ public class CommonFunctionsWeb extends Base {
         } catch (Exception e) {
             testLevelReport.get().log(Status.FAIL, elementName + " is not visible");
             testLevelReport.get().log(Status.DEBUG, e);
-
         }
     }
 
@@ -899,7 +981,7 @@ public class CommonFunctionsWeb extends Base {
         js.executeScript("window.scrollBy(0, 200);");
     }
 
-    public static void scrollUp() {
+    public static void scrollup() {
 
         JavascriptExecutor js = (JavascriptExecutor) Base.getDriver();
         js.executeScript("window.scrollBy(0,-500)");

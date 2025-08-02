@@ -235,17 +235,22 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>4.8.0</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>bson</artifactId>
-                    <groupId>org.mongodb</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>mongodb-driver-core</artifactId>
-                    <groupId>org.mongodb</groupId>
-                </exclusion>
-            </exclusions>
+            <version>4.11.0</version>
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <artifactId>bson</artifactId>-->
+<!--                    <groupId>org.mongodb</groupId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <artifactId>mongodb-driver-core</artifactId>-->
+<!--                    <groupId>org.mongodb</groupId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+        </dependency>
+        <dependency>
+            <groupId>dnsjava</groupId>
+            <artifactId>dnsjava</artifactId>
+            <version>3.5.2</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>

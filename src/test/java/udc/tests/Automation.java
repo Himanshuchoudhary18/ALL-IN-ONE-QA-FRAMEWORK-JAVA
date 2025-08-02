@@ -1,75 +1,73 @@
 package udc.tests;
 
 import com.aventstack.extentreports.Status;
-import com.redis.Log;
-import org.openqa.selenium.WebElement;
 import org.testng.annotations.Test;
 import qa.Retry;
+import udc.pages.Dashboard;
 import udc.pages.LoginPage;
+import udc.pages.Profile;
 import utilities.Base;
-import utilsDatabase.ConnectionManagerMySQL;
-import utilsWeb.CommonFunctionsWeb;
-
-import static udc.pages.LoginPage.ClickEditProfilePhoto;
 import static utilsWeb.CommonFunctionsWeb.*;
+import static utilsWeb.CommonFunctionsWeb.enterCharacter;
 
 @Test(description = "Sign Up and Login Flow for UDC Website")
 public class Automation extends Base {
-//    @DataProvider(name = "LoginCredentials")
-//    public Object[][] createData1() {
-//        return new Object[][]{
-//                {"7206391749", "1212"}
-//        };
-//    }
-
-    @Test(description = "UDC Website | Login & Sign Up Flow | LoginSignUp_HLS_001_TC_001 : Verifying and Validating Invalid Login Credentials Flow", retryAnalyzer = Retry.class, alwaysRun = true, groups = "smoke")
+    @Test(priority = 1,description = "UDC Website OpenURL | Visit Website | TC_001 : Visiting Website URL", retryAnalyzer = Retry.class, alwaysRun = true, groups = "smoke")
     public void openUDCWebsite() {
         try {
               openURL(Base.getProperty().getProperty("application"), true);
               click(LoginPage.visitWebsiteButton, "Clicked On Visit Website Button");
-
-              // My Profile -> Dashboard Page
-              enterCharacter(LoginPage.emailButton, "brampton@ultimatedrivers.ca", "Email Submitted");
-              enterCharacter(LoginPage.passwordButton, "Mehta@12345", "Password Submitted");
-              click(LoginPage.LoginButton, "Login Button Clicked");
-
-              // UI changes so this part is removed (Signature)
-              // click(LoginPage.EditHomepage, "Clicked");
-              // click(LoginPage.SelectSignOnHomePage, "Selected Signature");
-              // click(LoginPage.SelectSignFormat, "Format checkbox selected");
-              // click(LoginPage.SubmitSignature, "Submitting Signature");
-              // click(LoginPage.crossButton, "Close button clicked");
-
-              click(LoginPage.ClickRemoveProfilePhoto, "Removed Profile Photo");
-              uploadViaNativeDialog(LoginPage.ClickEditProfilePhoto,"FAQs","Profile Picture");
-              System.out.println("Photo uploaded");
-              safeClick(LoginPage.SubmitButton1, "Submit clicked with Safe Button");
-
-
-
-              Thread.sleep(4000);
-              // enterCharacter(LoginPage.mobilenumber, phoneNo, "input number");
-              // ConnectionManagerPostgreSQL.connectToDatabasePostgreSQL();
-              // enterCharacter(LoginPage.inputotp, LoginPage.getOtpFromPostgreSQL("SELECT * FROM otp_logs WHERE mobile_no = '" + phoneNo + "' ORDER BY created_on DESC;\n","otp"), "Input box for otp");
-              // click(LoginPage.submitLoginButton,"Submit Login Button");
-              // isElementDisplayed(LoginPage.surpriseMePopTitle,"Surprise Me Pop Up Title Image");
-
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             testLevelReport.get().log(Status.FAIL, "Test Execution Failed for : " + getClass().getAnnotation(Test.class).description());
-        } finally {
-            ConnectionManagerMySQL.closeConnectionDatabaseMySQL();
         }
     }
 
-    @Test(description = "UDC API | Login & Sign Up Flow | LoginSignUp_HLS_001_TC_002 : Validating Email and Password", alwaysRun = true, enabled = false, groups = "sanity")
-    public void hitGetAPIForAvatarOnCocaColaHomePage() {
+    @Test(priority = 2, description = "Validating Login Flow | Login & Sign Up Flow | TC_002 : Validating Email and Password", alwaysRun = true, enabled = true, groups = "sanity")
+    public void ValidateLoginPage() {
         try {
-//            String requestUrl = "https://api-jiab-staging.infinitelocus.com/api/v1/avatars/";
-//          AvatarHomePage avatarHomePage = callApi(RefactoredRestAssuredHelper.HTTPRequestType.GET, null, null, requestUrl, null, null, null, 0, 200, "status", AvatarHomePage.class);
-//          compareAndLogNotNull(avatarHomePage, "Response Check : Not Null");
-//          compareAndLog(avatarHomePage.status, 200, "Response Status Code Check");
-//          compareAndLog(avatarHomePage.message, "Request successful", "Response Message Check");
-        } catch (Exception e) {
+            enterCharacter(LoginPage.emailButton, "brampton@ultimatedrivers.ca", "Email Submitted");
+            enterCharacter(LoginPage.passwordButton, "Mehta@12345", "Password Submitted");
+            click(LoginPage.LoginButton, "Login Button Clicked");
+        }
+        catch (Exception e)
+        {
+            testLevelReport.get().log(Status.FAIL, "Test Execution Failed for : " + getClass().getAnnotation(Test.class).description() + e.getMessage());
+        }
+    }
+
+    @Test(priority = 3, description = "Validating Dashboard Profile Photo and Signature | Profile flow | TC_003 : Validating Dashboard Profile and Signature", alwaysRun = true, enabled = true, groups = "sanity")
+    public void ValidateProfile()
+    {
+        try
+        {
+            click(Profile.ClickRemoveProfilePhoto, "Removed Profile Photo");
+            uploadViaNativeDialog(Profile.ClickEditProfilePhoto,"FAQs","Profile Picture");
+            System.out.println("Photo uploaded");
+            safeClick(Profile.SubmitButton1, "Submit clicked with Safe Button");
+
+            Thread.sleep(2000);
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error : "+ e.getMessage());
+            testLevelReport.get().log(Status.FAIL, "Test Execution Failed for : " + getClass().getAnnotation(Test.class).description() + e.getMessage());
+        }
+    }
+
+    @Test(priority = 4, description = "Verifying Dashboard Functionality | Dashboard flow | TC_004 : Verifying View Tasks link in Pending Tasks | TC_005 : Verifying Location Filter", alwaysRun = true, enabled = true, groups = "sanity")
+    public void ValidateDashboard()
+    {
+        try
+        {
+            click(Dashboard.AllLocationFilter, "Clicked to change the location");
+            enterCharacter(Dashboard.SearchLocation, "BRAMPTON", "Search results in Location Search Column");
+            click(Dashboard.checkboxSelection, "Location checkbox selected");
+            click(Dashboard.selectLocation, "Select Locations Button Clicked");
+        }
+        catch (Exception e)
+        {
             testLevelReport.get().log(Status.FAIL, "Test Execution Failed for : " + getClass().getAnnotation(Test.class).description() + e.getMessage());
         }
     }
