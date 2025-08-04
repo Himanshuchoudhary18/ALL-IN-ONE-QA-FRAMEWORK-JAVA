@@ -32,7 +32,7 @@ public class DriverManager extends Base {
                 options.addArguments("--remote-allow-origins=*");
 
                 // By-pass CORS
-                if (Base.getProperty().getProperty("bypassCORS").equalsIgnoreCase("true")) {
+                if (Base.getProperty().getProperty("bypassCORS").equalsIgnoreCase("false")) {
                     options.addArguments("--disable-web-security");
                     options.addArguments("--allow-running-insecure-content");
                 }
@@ -63,7 +63,7 @@ public class DriverManager extends Base {
 
     public static void killDriverInstance() {
         if (getDriver() != null) {
-            // getDriver().quit();
+            getDriver().quit();
             setDriver(null);
         }
     }

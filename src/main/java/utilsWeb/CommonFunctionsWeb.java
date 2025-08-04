@@ -4,6 +4,7 @@ import com.aventstack.extentreports.Status;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import io.cucumber.core.logging.LoggerFactory;
 import io.cucumber.java.Scenario;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -37,6 +38,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -50,7 +52,7 @@ import static utilities.Constants.SCREENSHOT_PATH;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
-
+import java.util.logging.Logger;
 
 
 public class CommonFunctionsWeb extends Base {
@@ -552,6 +554,7 @@ public class CommonFunctionsWeb extends Base {
         return otp;
     }
 
+
     public static List<String> getAllCollectionNames() {
         List<String> collections = new ArrayList<>();
 
@@ -578,6 +581,21 @@ public class CommonFunctionsWeb extends Base {
         return collections;
     }
 
+    public static void waitInMillis(long millis) {
+        if (millis < 0) {
+            throw new IllegalArgumentException("waitInMillis: millis must be non-negative, got " + millis);
+        }
+        try
+        {
+            Thread.sleep(millis);
+        }
+        catch (InterruptedException e)
+        {
+            Thread.currentThread().interrupt();  // preserve the interrupt flag
+            throw new RuntimeException("Thread was interrupted while waiting for "
+                    + millis + " ms", e);
+        }
+    }
 
     public static Boolean verifyPresenceOfElement(By locator, String elementName, String... parms) {
         boolean flag = false;
@@ -644,51 +662,80 @@ public class CommonFunctionsWeb extends Base {
         }
     }
 
-    public static void uploadViaNativeDialog(By triggerLocator, String absoluteFilePath, String friendlyName) {
-        try {
-            WebDriver driver = Base.getDriver();
-
-            // 1) Wait and click the upload trigger
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    public static void uploadViaNativeDialog(By triggerLocator, String fileName, String friendlyName)
+    {
+        WebDriver driver = Base.getDriver();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        try
+        {
+            // 1) Open the native file dialog
             WebElement trigger = wait.until(ExpectedConditions.elementToBeClickable(triggerLocator));
             trigger.click();
             Base.testLevelReport.get().log(Status.INFO, "Clicked “" + friendlyName + "” trigger");
 
-            // 2) Copy file path
+            // 2) Build the full path (~/Downloads/fileName)
+            String downloadFolder = System.getProperty("user.home") + File.separator + "Downloads";
+            String absoluteFilePath = Paths.get(downloadFolder, fileName).toString();
+
+            // 3) Copy to clipboard
             StringSelection sel = new StringSelection(absoluteFilePath);
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, null);
 
-            // 3) Buffer to ensure native dialog appears
+            // 4) Wait a moment for dialog to appear
             Thread.sleep(1000);
 
-            // 4) Paste file path and press Enter using Robot
+            // 5) Paste + Enter via Robot (handles Windows/Linux/macOS)
             Robot robot = new Robot();
             robot.setAutoDelay(100);
-            robot.keyPress(KeyEvent.VK_CONTROL);
-            robot.keyPress(KeyEvent.VK_V);
-            robot.keyRelease(KeyEvent.VK_V);
-            robot.keyRelease(KeyEvent.VK_CONTROL);
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("mac"))
+            {
+                robot.keyPress(KeyEvent.VK_META);
+                robot.keyPress(KeyEvent.VK_V);
+                robot.keyRelease(KeyEvent.VK_V);
+                robot.keyRelease(KeyEvent.VK_META);
+            }
+            else
+            {
+                robot.keyPress(KeyEvent.VK_CONTROL);
+                robot.keyPress(KeyEvent.VK_V);
+                robot.keyRelease(KeyEvent.VK_V);
+                robot.keyRelease(KeyEvent.VK_CONTROL);
+            }
             robot.keyPress(KeyEvent.VK_ENTER);
             robot.keyRelease(KeyEvent.VK_ENTER);
 
-            // 5) Optional wait for any post-upload element to appear/disappear (if needed)
-            try {
-                wait.withTimeout(Duration.ofSeconds(5))
-                        .until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector("div[aria-label*='loading'], .spinner, .loader")));
+            // 6) Post-upload wait logic
+            By postUploadLocator;
+            switch (friendlyName.toLowerCase()) {
+                case "profile picture":
+                    postUploadLocator = By.cssSelector("img.profile-avatar");
+                    break;
+                case "cover photo":
+                    postUploadLocator = By.id("coverPhotoPreview");
+                    break;
+                default:
+                    postUploadLocator = By.cssSelector(".spinner, .loader");
+                    break;
             }
-            catch (Exception e)
+            try
             {
-                e.getMessage();
+                wait.withTimeout(Duration.ofSeconds(5)).until(ExpectedConditions.invisibilityOfElementLocated(postUploadLocator));
             }
-            Base.testLevelReport.get().log(Status.PASS, friendlyName + " uploaded via native dialog: " + absoluteFilePath);
+            catch (TimeoutException ignored)
+            {
+                Base.testLevelReport.get().log(Status.FAIL, "Failed to upload “" + friendlyName + "”: " + fileName);
+            }
+            Base.testLevelReport.get().log(Status.PASS, friendlyName + " uploaded: " + absoluteFilePath);
 
-        } catch (Exception e) {
-            Base.testLevelReport.get().log(Status.FAIL, "Failed to upload “" + friendlyName + "”: " + absoluteFilePath);
+        }
+        catch (Exception e)
+        {
+            Base.testLevelReport.get().log(Status.FAIL, "Failed to upload “" + friendlyName + "”: " + fileName);
             Base.testLevelReport.get().log(Status.DEBUG, e);
             Assert.fail("uploadViaNativeDialog() failed for “" + friendlyName + "”", e);
         }
     }
-
 
     public static void takeSnapShot() throws IOException {
         String path = System.getProperty("user.dir");
