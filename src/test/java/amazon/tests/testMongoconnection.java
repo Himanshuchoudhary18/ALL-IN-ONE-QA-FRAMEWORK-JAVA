@@ -1,4 +1,4 @@
-package udc.tests;
+package amazon.tests;
 
 import org.testng.annotations.Test;
 import utilsWeb.CommonFunctionsWeb;

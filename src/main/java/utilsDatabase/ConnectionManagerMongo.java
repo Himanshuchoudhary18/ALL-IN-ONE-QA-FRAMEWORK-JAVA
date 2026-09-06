@@ -12,8 +12,12 @@ public class ConnectionManagerMongo {
     public static void connectToDatabaseMongo()
     {
         try {
-            String uri = "mongodb+srv://infinite-locus:i4vEqNkDOtWVaULn@erspl-logistics.vd82vdt.mongodb.net/?retryWrites=true&w=majority&appName=udc";
-            String dbName = "udc";
+            String uri = System.getenv("MONGODB_URI");
+            String dbName = System.getenv("MONGODB_DATABASE");
+
+            if (uri == null || uri.isBlank() || dbName == null || dbName.isBlank()) {
+                throw new IllegalStateException("Set MONGODB_URI and MONGODB_DATABASE before connecting.");
+            }
 
             mongoClient = MongoClients.create(uri);
             database = mongoClient.getDatabase(dbName);

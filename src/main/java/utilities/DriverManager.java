@@ -63,7 +63,7 @@ public class DriverManager extends Base {
 
     public static void killDriverInstance() {
         if (getDriver() != null) {
-            getDriver().quit();
+            // getDriver().quit();
             setDriver(null);
         }
     }

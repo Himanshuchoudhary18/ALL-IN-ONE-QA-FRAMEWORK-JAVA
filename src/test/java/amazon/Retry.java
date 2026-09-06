@@ -1,4 +1,4 @@
-package udc;
+package amazon;
 
 import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
